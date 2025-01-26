@@ -84,6 +84,12 @@ if(OPENSSL_FOUND)
 
  
 endif()
+
+set(miniAudio_INCLUDE_DIRS "${LLKLiveAssist_ROOT_DIR}/Vendor/miniaudio")
+target_include_directories(
+  ${TARGET_NAME} 
+  PUBLIC ${miniAudio_INCLUDE_DIRS})
+
 if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
   target_compile_options(${TARGET_NAME} PRIVATE /bigobj) #支持大文件编译
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")

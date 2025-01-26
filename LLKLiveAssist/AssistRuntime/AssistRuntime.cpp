@@ -17,7 +17,7 @@ void AssistRuntime::init() {
   //AddAssistPlugin(bili_client_assist);
 
   std::shared_ptr<GSoVITSAssist> GSoVITS_assist = std::make_shared<GSoVITSAssist>();
-  AddAssistPlugin(GSoVITS_assist);
+  //AddAssistPlugin(GSoVITS_assist);
 
   for (auto &plug : plugins) {
     plug->start();

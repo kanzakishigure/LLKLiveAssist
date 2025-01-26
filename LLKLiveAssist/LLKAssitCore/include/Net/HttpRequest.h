@@ -9,6 +9,7 @@
 #include <boost/asio/ssl/error.hpp>
 #include <boost/asio/ssl/stream.hpp>
 #include <boost/beast/ssl.hpp>
+#include <functional>
 
 
 
@@ -44,6 +45,9 @@ namespace NAssist
         void SetContent(const std::string& data);
         void SetTarget(const std::string& url);
         std::string Receive();
+        void AsyncReceive(std::function<void(boost::beast::error_code,std::size_t)> callback);
+        const boost::beast::http::response<boost::beast::http::dynamic_body>& GetRespons(){return m_res;}
+
         
         static std::shared_ptr<HttpRequest> CreateRequest(const std::string& host, const std::string& uri, HttpRequestMethod request_method);
 
@@ -59,7 +63,10 @@ namespace NAssist
         boost::asio::ssl::context m_ssl_ctx;
         boost::beast::ssl_stream<boost::beast::tcp_stream> m_ssl_stream;
 
+
+        boost::beast::flat_buffer m_buffer;
         boost::beast::http::request< boost::beast::http::string_body> m_req;
+        boost::beast::http::response<boost::beast::http::dynamic_body> m_res;
 
     
     };

@@ -1,5 +1,6 @@
 #include "Net/HttpRequest.h"
 
+#include <boost/beast/http.hpp>
 #include <cstdlib>
 #include <iostream>
 #include <map>
@@ -157,18 +158,17 @@ std::string HttpRequest::Receive() {
   std::cout << m_req << std::endl;
   try {
 
-    // Declare a container to hold the response
-    boost::beast::http::response<boost::beast::http::dynamic_body> res;
+    
 
     switch (request_type) {
     case NAssist::HttpRequestType::http: {
       boost::beast::http::write(m_tcp_stream, m_req);
 
-      // This buffer is used for reading and must be persisted
-      boost::beast::flat_buffer buffer;
+      
+      
 
       // Receive the HTTP response
-      boost::beast::http::read(m_tcp_stream, buffer, res);
+      boost::beast::http::read(m_tcp_stream, m_buffer, m_res);
 
       // Write the message to standard out
 
@@ -176,18 +176,19 @@ std::string HttpRequest::Receive() {
     case NAssist::HttpRequestType::https: {
       boost::beast::http::write(m_ssl_stream, m_req);
 
-      // This buffer is used for reading and must be persisted
-      boost::beast::flat_buffer buffer;
+      
+      
 
       // Receive the HTTP response
-      boost::beast::http::read(m_ssl_stream, buffer, res);
+      boost::beast::http::read(m_ssl_stream, m_buffer, m_res);
+      
 
       // Write the message to standard out
 
     } break;
     }
 
-    result = boost::beast::buffers_to_string(res.body().data());
+    result = boost::beast::buffers_to_string(m_res.body().data());
     
   } catch (std::exception const &e) {
     std::cerr << "Error: " << e.what() << std::endl;
@@ -195,4 +196,30 @@ std::string HttpRequest::Receive() {
   return result;
 }
 
-}; // namespace NAssist
+void HttpRequest::AsyncReceive(
+    std::function<void(boost::beast::error_code, std::size_t)> callback) {
+  // Send the HTTP request to the remote host
+
+  switch (request_type) {
+  case NAssist::HttpRequestType::http: {
+    boost::beast::http::write(m_tcp_stream, m_req);
+
+    // Receive the HTTP response
+    boost::beast::http::async_read(m_tcp_stream, m_buffer, m_res, callback);
+
+    // Write the message to standard out
+
+  } break;
+  case NAssist::HttpRequestType::https: {
+    boost::beast::http::write(m_ssl_stream, m_req);
+
+    // Receive the HTTP response
+    boost::beast::http::async_read(m_ssl_stream, m_buffer, m_res, callback);
+
+    // Write the message to standard out
+
+  } break;
+  }
+  m_io_ctx.run();
+}
+} // namespace NAssist
