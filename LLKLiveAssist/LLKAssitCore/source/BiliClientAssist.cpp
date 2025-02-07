@@ -1,5 +1,6 @@
 #include "BiliClientAssist.h"
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <format>
@@ -9,6 +10,8 @@
 #include <thread>
 
 #include "Data/ProtoPacket.h"
+#include "GSoVITSAssist.h"
+#include "ModuleManager.h"
 
 #include <boost/asio.hpp>
 
@@ -21,6 +24,38 @@ const std::string k_InteractivePlayEnd = "/v2/app/end";
 const std::string k_InteractivePlayBatchHeartBeat = "/v2/app/batchHeartbeat";
 const std::string k_InteractivePlayHeartBeat = "/v2/app/heartbeat";
 
+BiliClientAssist::BiliWebCMD string2BiliWebCMD(std::string cmd)
+{
+    if(cmd == "LIVE_OPEN_PLATFORM_DM")
+    {
+        return BiliClientAssist::BiliWebCMD::LIVE_OPEN_PLATFORM_DM;
+    }
+    else if(cmd == "LIVE_OPEN_PLATFORM_SEND_GIFT")
+    {
+        return BiliClientAssist::BiliWebCMD::LIVE_OPEN_PLATFORM_SEND_GIFT;
+    }
+    else if(cmd == "LIVE_OPEN_PLATFORM_SUPER_CHAT")
+    {
+        return BiliClientAssist::BiliWebCMD::LIVE_OPEN_PLATFORM_SUPER_CHAT;
+    }
+    else if(cmd == "LIVE_OPEN_PLATFORM_SUPER_CHAT_DEL")
+    {
+        return BiliClientAssist::BiliWebCMD::LIVE_OPEN_PLATFORM_SUPER_CHAT_DEL;
+    }
+    else if(cmd == "LIVE_OPEN_PLATFORM_GUARD")
+    {
+        return BiliClientAssist::BiliWebCMD::LIVE_OPEN_PLATFORM_GUARD;
+    }
+    else if(cmd == "LIVE_OPEN_PLATFORM_LIKE")
+    {
+        return BiliClientAssist::BiliWebCMD::LIVE_OPEN_PLATFORM_LIKE;
+    }
+    else
+    {
+        return BiliClientAssist::BiliWebCMD::None;
+    }
+}
+
 void BiliClientAssist::init() {
     std::cout << "BiliClientAssist Init\n";
     //TODO: initiate the data from json file.
@@ -28,7 +63,7 @@ void BiliClientAssist::init() {
     m_AccessKeySecret = "idiGra89obnAzmlZNjWRnw9jDi6vY6";
     m_AppId = "1739800103262";
     m_Code = "BVJSMTS1T88W9";
-    //SetConsoleOutputCP(CP_UTF8);
+    SetConsoleOutputCP(CP_UTF8);
     
 }
 void BiliClientAssist::shutdown() {}
@@ -45,7 +80,7 @@ void BiliClientAssist::start() {
   
 
 
-  m_AppHeartPeriodicTask = std::make_shared<PeriodicTask>([this]() {
+  auto app_heart_periodic_task = std::make_shared<PeriodicTask>([this]() {
 
 	  std::cout << "app heartbeat" << std::endl;
 	  HeartBeatInteractivePlay(m_AppStartInfo.GameInfo.GameId);
@@ -53,16 +88,17 @@ void BiliClientAssist::start() {
 
 	  }, 20);
 
-  m_GameHeartPeriodicTask = std::make_shared<PeriodicTask>([this]() {
+  auto game_heart_periodic_task = std::make_shared<PeriodicTask>([this]() {
 
 	  std::cout << "game heartbeat" << std::endl;
 	  HeartBeatWebsocketClient();
       
 	  }, 30);
-   appthread  = std::thread([this]() {m_AppHeartPeriodicTask->Start(); });
-   gamethread = std::thread([this]() {m_GameHeartPeriodicTask->Start(); });
-   msgthread = std::thread([this]() { while (true)
-   {
+
+   appthread  = std::thread([this,app_heart_periodic_task]() {app_heart_periodic_task->Start(); });
+   gamethread = std::thread([this,game_heart_periodic_task]() {game_heart_periodic_task->Start(); });
+   msgthread = std::thread([this]() { 
+    while (true){
        WebsocketClientReceive();
    } });
    
@@ -231,7 +267,62 @@ void BiliClientAssist::WebsocketClientReceive()
 	m_bili_websocket->CommitAsyncTask();
     
     */
-    m_bili_websocket->Receive();
+    auto bytes = m_bili_websocket->Receive();
+    auto packet = bytes2ProtoPacket(bytes);
+    std::string result = std::string(packet.body.begin(),packet.body.end());
+    
+    if(result.empty())
+    {
+        m_bili_websocket->CleanBuffer();
+        return;
+    }
+    
+    if(ProtoOperation::ServerNotify==packet.header.operation)
+    {
+        auto json_value = boost::json::parse(result);
+        std::string cmd = json_value.at("cmd").as_string().c_str();
+        BiliWebCMD bili_cmd = string2BiliWebCMD(cmd);
+        switch (bili_cmd)
+        {
+            case BiliWebCMD::LIVE_OPEN_PLATFORM_DM:
+            {
+                std::cout << "LIVE_OPEN_PLATFORM_DM" << std::endl;
+
+                auto p =  ModuleManager::getInstance().getModule<GSoVITSAssist>(); 
+                p->pushMsg(json_value.at("data").at("msg").as_string().c_str());
+                break;
+            }
+            case BiliWebCMD::LIVE_OPEN_PLATFORM_SEND_GIFT:
+            {
+                std::cout << "LIVE_OPEN_PLATFORM_SEND_GIFT" << std::endl;
+                break;
+            }
+            case BiliWebCMD::LIVE_OPEN_PLATFORM_SUPER_CHAT:
+            {
+                std::cout << "LIVE_OPEN_PLATFORM_SUPER_CHAT" << std::endl;
+                break;
+            }
+            case BiliWebCMD::LIVE_OPEN_PLATFORM_SUPER_CHAT_DEL:
+            {
+                std::cout << "LIVE_OPEN_PLATFORM_SUPER_CHAT_DEL" << std::endl;
+                break;
+            }
+            case BiliWebCMD::LIVE_OPEN_PLATFORM_GUARD:
+            {
+                std::cout << "LIVE_OPEN_PLATFORM_GUARD" << std::endl;
+                break;
+            }
+            case BiliWebCMD::LIVE_OPEN_PLATFORM_LIKE:
+            {
+                std::cout << "LIVE_OPEN_PLATFORM_LIKE" << std::endl;
+                break;
+            }
+            case BiliWebCMD::None:
+            {
+                break;
+            }
+        }
+    }
     m_bili_websocket->CleanBuffer();
     
 }

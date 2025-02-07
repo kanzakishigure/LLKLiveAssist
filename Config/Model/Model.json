@@ -1,0 +1,8 @@
+{
+    "model_name": "胡桃",
+    "sovits_weights": "SoVITS_weights_v2/胡桃/胡桃_e15_s825.pth",
+    "gpt_weights": "SoVITS_weights_v2/胡桃/胡桃-e10.ckpt",
+    "prompt_text": "本堂主略施小计，你就败下阵来了，嘿嘿。",
+    "prompt_lang": "zh",
+    "ref_audio_path": "SoVITS_weights_v2/胡桃/本堂主略施小计，你就败下阵来了，嘿嘿。.wav"
+}

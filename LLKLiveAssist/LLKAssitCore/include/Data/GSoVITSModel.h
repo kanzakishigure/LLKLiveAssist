@@ -10,8 +10,8 @@ namespace NAssist {
 struct GSoVITSModel : public Serializeable {
 
 	std::string model_name;
-	std::string sovits_weights; //Sovits模型 .pth
-	std::string gpt_weights; //GPT模型 .ckpt 
+	std::string sovits_weights; //Sovits妯″瀷 .pth
+	std::string gpt_weights; //GPT妯″瀷 .ckpt 
 	
 	std::string ref_audio_path;
 	std::string prompt_text;
@@ -45,15 +45,15 @@ struct GSoVITSRequestBody : public Serializeable
 inline std::string GSoVITSRequestBody2JsonString(GSoVITSRequestBody body)
 {
 	std::stringstream ss;
-	ss << "{" << "\"text\":\"" << body.text << "\"";
-	ss << "," << "\"text_lang\":\"" << body.text_lang << "\"";
-	ss << "," << "\"ref_audio_path\":\"" << body.ref_audio_path << "\"";
-	ss << "," << "\"prompt_text\":\"" << body.prompt_text << "\"";
-	ss << "," << "\"prompt_lang\":\"" << body.prompt_lang << "\"";
+	ss << "{" << R"("text":")" << body.text << "\"";
+	ss << "," << R"("text_lang":")" << body.text_lang << "\"";
+	ss << "," << R"("ref_audio_path":")" << body.ref_audio_path << "\"";
+	ss << "," << R"("prompt_text":")" << body.prompt_text << "\"";
+	ss << "," << R"("prompt_lang":")" << body.prompt_lang << "\"";
 	ss << "," << "\"top_k\":" << body.top_k;
 	ss << "," << "\"top_p\":" << body.top_p;
 	ss << "," << "\"temperature\":" << body.temperature;
-	ss << "," << "\"text_split_method\":\"" << body.text_split_method << "\"";
+	ss << "," << R"("text_split_method":")" << body.text_split_method << "\"";
 	ss << "," << "\"batch_size\":" << body.batch_size;
 	ss << "," << "\"batch_threshold\":" << body.batch_threshold;
 	ss << "," << "\"split_bucket\":" << body.split_bucket ;

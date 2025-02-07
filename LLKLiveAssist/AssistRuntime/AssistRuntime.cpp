@@ -1,45 +1,47 @@
 #include "AssistRuntime.h"
 
 #include "BiliClientAssist.h"
-#include "BroadcastAssist.h"
+#include "AudioAssist.h"
 #include "GSoVITSAssist.h"
+
 
 #include <iostream>
 
 namespace NAssist {
+
+AssistRuntime::~AssistRuntime() {
+  shutdown();
+}
+
 void AssistRuntime::init() {
   // Initialize the assist core
   // create and add plugins
-  std::shared_ptr<BroadcastAssist> broadcast_assist = std::make_shared<BroadcastAssist>();
-  AddAssistPlugin(broadcast_assist);
+  std::shared_ptr<AudioAssist> audio_assist = std::make_shared<AudioAssist>();
+  ModuleManager::getInstance().addPlugin(audio_assist);
 
   std::shared_ptr<BiliClientAssist> bili_client_assist = std::make_shared<BiliClientAssist>();
-  //AddAssistPlugin(bili_client_assist);
+  ModuleManager::getInstance().addPlugin(bili_client_assist);
 
   std::shared_ptr<GSoVITSAssist> GSoVITS_assist = std::make_shared<GSoVITSAssist>();
-  //AddAssistPlugin(GSoVITS_assist);
+  ModuleManager::getInstance().addPlugin(GSoVITS_assist);
 
-  for (auto &plug : plugins) {
-    plug->start();
-  }
+  ModuleManager::getInstance().startAllModule();
+
+
+
 }
 void AssistRuntime::shutdown() {
-  for (const auto &plugin : plugins) {
-    plugin->shutdown();
-  }
+ ModuleManager::getInstance().shutdown();
   // Shutdown the assist core
 }
 void AssistRuntime::run() {
   while (!closed) {
     // Run the assist core
-    for (const auto &plugin : plugins) {
-      plugin->drawUI();
-    }
+    ModuleManager::getInstance().update();
   }
 }
-void AssistRuntime::AddAssistPlugin(const std::shared_ptr<PluginBase> plugin) {
-  plugin->init();
-  plugins.push_back(plugin);
-}
+
+
+
 
 } // namespace NAssist

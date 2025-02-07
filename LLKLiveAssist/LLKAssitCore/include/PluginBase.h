@@ -4,7 +4,7 @@ namespace NAssist {
 
 enum class PluginType {
   None = 0,
-  Broadcast,
+  Audio,
   GSoVITS,
   BiliClient,
 };
@@ -15,9 +15,9 @@ public:
   virtual void shutdown() = 0;
   virtual void drawUI() = 0;
 
-  virtual PluginType getStaticType() { return m_type; }
+  virtual PluginType getType() { return PluginType::None; }
+  static PluginType getStaticType() { return PluginType::None;}
+  
 
-private:
-  PluginType m_type = PluginType::None;
 };
 } // namespace NAssist

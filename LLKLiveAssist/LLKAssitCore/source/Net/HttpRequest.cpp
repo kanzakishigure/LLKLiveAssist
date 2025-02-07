@@ -155,7 +155,7 @@ void HttpRequest::SetTarget(const std::string& url)
 std::string HttpRequest::Receive() {
   // Send the HTTP request to the remote host
   std::string result;
-  std::cout << m_req << std::endl;
+  
   try {
 
     

@@ -1,9 +1,15 @@
 ﻿#include "GSoVITSAssist.h"
+#include "ModuleManager.h"
 #include "Net/HttpRequest.h"
+#include <boost/json/parse.hpp>
+#include <cstdint>
 #include <filesystem>
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <sstream>
 #include <string>
+#include <vector>
+
 
 namespace NAssist {
 
@@ -15,27 +21,35 @@ const std::string set_sovits_weights_endpoint = "/set_sovits_weights";
 
 void GSoVITSAssist::init() {
   // load model data
-  m_GSoVITSModel.model_name = "胡桃";
-  m_GSoVITSModel.sovits_weights = "SoVITS_weights_v2/胡桃/胡桃_e15_s825.pth";
-  m_GSoVITSModel.gpt_weights = "SoVITS_weights_v2/胡桃/胡桃-e10.ckpt";
+  if (std::filesystem::exists(MODEL_CONFIG_PATH)) {
+    std::ifstream istream(MODEL_CONFIG_PATH);
+    using Iterator = std::istreambuf_iterator<char>;
+    std::string content(Iterator{istream}, Iterator{});
+    istream.close();
 
-  m_GSoVITSModel.prompt_text = "本堂主略施小计，你就败下阵来了，嘿嘿。";
-  m_GSoVITSModel.prompt_lang = "zh";
-  m_GSoVITSModel.ref_audio_path = "SoVITS_weights_v2/胡桃/本堂主略施小计，你就败下阵来了，嘿嘿。.wav";
+    if (!content.empty()) {
+      auto jv = boost::json::parse(content);
+      auto result = Parser<GSoVITSModel>::parse(jv);
+      if (result.index() == 1) {
+        std::cout << "load model fail!" << std::endl;
+      }
+      m_GSoVITSModel = get<0>(result);
+    }
+  }
 
   // set the sovits model and gpt model
   {
 
     std::shared_ptr<HttpRequest> request = HttpRequest::CreateRequest(
         request_host, set_gpt_weights_endpoint, HttpRequestMethod::get);
-    	request->AddHeader("weights_path", m_GSoVITSModel.gpt_weights);
+    request->AddHeader("weights_path", m_GSoVITSModel.gpt_weights);
     std::cout << request->Receive() << std::endl;
   }
   {
 
     std::shared_ptr<HttpRequest> request = HttpRequest::CreateRequest(
         request_host, set_sovits_weights_endpoint, HttpRequestMethod::get);
-    	request->AddHeader("weights_path", m_GSoVITSModel.sovits_weights);
+    request->AddHeader("weights_path", m_GSoVITSModel.sovits_weights);
     std::cout << request->Receive() << std::endl;
   }
   // generate request body use data from model
@@ -48,8 +62,8 @@ void GSoVITSAssist::init() {
   m_stoped = false;
   m_thread = std::thread([this]() {
     while (!m_stoped) {
-      std::unique_lock<std::mutex> lock(m_mutex); // 获取锁
-      m_condition.wait(lock,
+      std::unique_lock<std::mutex> lock(m_msg_mutex); // 获取锁
+      m_msg_condition.wait(lock,
                        [this] { return !m_msg_queue.empty(); }); // 等待条件
       while (!m_msg_queue.empty()) {
         std::string msg = m_msg_queue.front();
@@ -60,23 +74,38 @@ void GSoVITSAssist::init() {
       }
     }
   });
-
-  
 }
 
+void GSoVITSAssist::pushAudioStream(std::vector<uint8_t> bytes_stream)
+{
+  std::lock_guard<std::mutex> lg(m_audio_mutex);
+  m_audio_buffers.push(bytes_stream);
+}
+std::vector<uint8_t> GSoVITSAssist::popAudioSteam()
+{
+  std::lock_guard<std::mutex> lg(m_audio_mutex);
+  std::vector<uint8_t> result;
+  if(!m_audio_buffers.empty())
+  {
+    result =  m_audio_buffers.front();
+    m_audio_buffers.pop();
+  }
+  return  result;
+}
 void GSoVITSAssist::start() {}
 
 void GSoVITSAssist::shutdown() {
-  std::lock_guard<std::mutex> lg(m_mutex);
+  std::lock_guard<std::mutex> lg(m_msg_mutex);
   m_stoped = true;
 }
 
 void GSoVITSAssist::drawUI() {}
 
 void GSoVITSAssist::pushMsg(const std::string &msg) {
-  std::lock_guard<std::mutex> lock(m_mutex);
+
+  std::lock_guard<std::mutex> lg(m_msg_mutex);
   m_msg_queue.push(msg);
-  m_condition.notify_one();
+  m_msg_condition.notify_one();
 }
 
 void GSoVITSAssist::commitRequest2GSoVits(const std::string &msg) {
@@ -88,33 +117,27 @@ void GSoVITSAssist::commitRequest2GSoVits(const std::string &msg) {
 
     std::string json_string = boost::json::serialize(js);
 
+    //receive audio data
     {
       std::shared_ptr<HttpRequest> request = HttpRequest::CreateRequest(
           request_host, inference_endpoint, HttpRequestMethod::post);
 
       request->AddHeader("Content-Type", "application/json");
       request->SetContent(json_string);
-      
-      request->AsyncReceive([request,msg](boost::beast::error_code ec,std::size_t transfered){
 
-        if(ec)
-        {
-          std::cout << "error"<<ec.what() << std::endl;
-          return;
-        }
-        auto response = request->GetRespons();
-      
-      if(!std::filesystem::exists("./output/"))
-      {
-        std::filesystem::create_directory("./output/");
-      }
-      
-      std::string file_name = "./output/test.wav";
-      std::ofstream out(file_name, std::ios::binary);
-      out<<boost::beast::buffers_to_string(response.body().data());
-      out.close();
-      });
-    
+      request->AsyncReceive([request, msg](boost::beast::error_code ec, std::size_t transfered) {
+            if (ec) {
+              std::cout << "error" << ec.what() << std::endl;
+              return;
+            }
+            auto response = request->GetRespons();
+            auto str_data = boost::beast::buffers_to_string(response.body().data());
+            auto byte_stream = std::vector<uint8_t>(str_data.begin(),str_data.end());
+            auto gsovits_assist = ModuleManager::getInstance().getModule<GSoVITSAssist>();
+
+            gsovits_assist->pushAudioStream(byte_stream);
+            
+          });
     }
   }
 }

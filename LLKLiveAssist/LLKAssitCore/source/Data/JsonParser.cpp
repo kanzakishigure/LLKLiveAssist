@@ -50,6 +50,31 @@ NAssist::AppStartInfo info;
   return info;
 }
 
+NAssist::GSoVITSModel
+tag_invoke(const boost::json::value_to_tag<NAssist::GSoVITSModel> &,
+           boost::json::value const &jv) {
+
+NAssist::GSoVITSModel model;
+  try {
+    
+    if (jv.is_null()) {
+      throw std::runtime_error("invalid json_value to NAssist::AppStartInfo");
+    }
+    model.model_name = jv.at("model_name").as_string();
+    model.gpt_weights = jv.at("gpt_weights").as_string();
+    model.sovits_weights = jv.at("sovits_weights").as_string();
+    model.prompt_lang = jv.at("prompt_lang").as_string();
+    model.prompt_text = jv.at("prompt_text").as_string();
+    model.ref_audio_path = jv.at("ref_audio_path").as_string();
+
+
+    
+  } catch (const std::exception &e) {
+    std::cerr << "Error: " << e.what() << std::endl;
+  }
+  return model;
+}
+
 void tag_invoke(const value_from_tag&, value& jv, NAssist::GSoVITSRequestBody const& request)
 {
 	// Store the IP address as a 4-element array of octets

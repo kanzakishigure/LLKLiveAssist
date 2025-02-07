@@ -119,7 +119,7 @@ namespace NAssist
 		void AsyncReceive(std::function<void(boost::beast::error_code, std::size_t)> func);
 		
 		void Send(const std::vector<uint8_t>& data);
-		void Receive();
+		std::vector<uint8_t> Receive();
 
 		void StartAsyncTask();
 		void CommitAsyncTask();

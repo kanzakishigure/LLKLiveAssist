@@ -1,6 +1,7 @@
 #pragma once
 #include <boost/endian/buffers.hpp>
 
+#include <cstdint>
 #include <vector>
 #include "Data/JsonParser.h"
 namespace NAssist {
@@ -98,5 +99,34 @@ static std::vector<uint8_t> ProtoPacket2bytes(ProtoPacket packet) {
   data.insert(data.end(), packet.body.begin(), packet.body.end());
 
   return data;
+}
+
+static ProtoPacket bytes2ProtoPacket(std::vector<uint8_t> bytes) {
+  
+  ProtoPacket packet;
+  
+  packet.header.packet_length = *(reinterpret_cast<uint32_t *>(&bytes[0])) ;
+  packet.header.header_length = *(reinterpret_cast<uint16_t *>(&bytes[4]));
+  packet.header.version = static_cast<ProtoVersion>(*(reinterpret_cast<uint16_t *>(&bytes[6])));
+  packet.header.operation = static_cast<ProtoOperation>(*(reinterpret_cast<uint32_t *>(&bytes[8])));
+  packet.header.sequence_id = *(reinterpret_cast<uint32_t *>(&bytes[12]));
+
+
+  if (is_little_endian2()) {
+    packet.header.packet_length =
+        boost::endian::endian_reverse(packet.header.packet_length);
+    packet.header.header_length =
+        boost::endian::endian_reverse(packet.header.header_length);
+    packet.header.version =
+        boost::endian::endian_reverse(packet.header.version);
+    packet.header.operation =
+        boost::endian::endian_reverse(packet.header.operation);
+    packet.header.sequence_id =
+        boost::endian::endian_reverse(packet.header.sequence_id);
+  }
+  packet.body = std::vector<uint8_t>(bytes.begin()+16,bytes.end());
+  
+
+  return packet;
 }
 } // namespace NAssist

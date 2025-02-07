@@ -18,6 +18,8 @@ set_target_properties(${TARGET_NAME} PROPERTIES FOLDER "Assist")
 
 target_compile_options(${TARGET_NAME} PUBLIC "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/WX->") #将警告视为错误
 
+target_compile_definitions(${TARGET_NAME} PRIVATE MODEL_CONFIG_PATH="${LLKLiveAssist_ROOT_DIR}/Config/Model/model.json")
+
 
 
 
@@ -85,7 +87,7 @@ if(OPENSSL_FOUND)
  
 endif()
 
-set(miniAudio_INCLUDE_DIRS "${LLKLiveAssist_ROOT_DIR}/Vendor/miniaudio")
+set(miniAudio_INCLUDE_DIRS "${LLKLiveAssist_ROOT_DIR}/Vendor/miniaudio/extras/miniaudio_split")
 target_include_directories(
   ${TARGET_NAME} 
   PUBLIC ${miniAudio_INCLUDE_DIRS})

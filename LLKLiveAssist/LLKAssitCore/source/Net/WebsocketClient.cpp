@@ -6,6 +6,7 @@
 #include <map>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 
 namespace NAssist {
@@ -226,17 +227,19 @@ void AsyncWebsocketClient::Send(const std::vector<uint8_t>& data)
 	}
 }
 
-void AsyncWebsocketClient::Receive()
+std::vector<uint8_t> AsyncWebsocketClient::Receive()
 {
 	try {
-
+        m_buffer.clear();
         m_async_stream.read(m_buffer);
-
-		std::cout << boost::beast::make_printable(m_buffer.data()) << std::endl;
+        std::string data = boost::beast::buffers_to_string(m_buffer.data());
+        return std::vector<uint8_t>(data.begin(),data.end());
 	}
 	catch (const std::exception& e) {
 		std::cerr << "Error: " << e.what() << std::endl;
+    
 	}
+  return {};
 }
 
 void AsyncWebsocketClient::StartAsyncTask() 
