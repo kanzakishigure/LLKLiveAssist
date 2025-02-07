@@ -4,4 +4,4 @@
 build/
 Vendor/boost
 .cache/
-
+.vscode/
