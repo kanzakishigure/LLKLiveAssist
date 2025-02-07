@@ -42,8 +42,7 @@ LLKAssist -LULUCA小助手
    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=kanzakishigure/LLKLiveAssist&type=Date" />
  </picture>
 </a>
-[![Star History Chart](https://api.star-history.com/svg?repos=kanzakishigure/LLKLiveAssist&type=Date)](https://star-history.com/#kanzakishigure/LLKLiveAssist&Date)
-## Star History
+
 
 
 ## 致谢
