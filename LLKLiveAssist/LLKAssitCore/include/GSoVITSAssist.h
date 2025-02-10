@@ -7,8 +7,10 @@
 #include <mutex>
 #include <queue>
 #include <thread>
-#include <semaphore>
 #include <vector>
+
+#include <boost/process.hpp>
+#include <boost/process/v1/detail/child_decl.hpp>
 
 namespace NAssist {
 
@@ -29,6 +31,8 @@ public:
   std::vector<uint8_t> popAudioSteam();
 private:
   bool  m_stoped = true;
+  
+  std::unique_ptr<boost::process::child> m_gpt_sovist_process;
   std::mutex m_msg_mutex;
   std::mutex m_audio_mutex;
   std::condition_variable m_msg_condition;

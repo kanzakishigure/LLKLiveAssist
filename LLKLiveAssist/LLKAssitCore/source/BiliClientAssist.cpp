@@ -289,7 +289,10 @@ void BiliClientAssist::WebsocketClientReceive()
                 std::cout << "LIVE_OPEN_PLATFORM_DM" << std::endl;
 
                 auto p =  ModuleManager::getInstance().getModule<GSoVITSAssist>(); 
-                p->pushMsg(json_value.at("data").at("msg").as_string().c_str());
+                std::string uname = json_value.at("data").at("uname").as_string().c_str();
+                std::string content = json_value.at("data").at("msg").as_string().c_str();
+                std::string msg  = std::format("{0}说：“{1}",uname,content);
+                p->pushMsg(msg);
                 break;
             }
             case BiliWebCMD::LIVE_OPEN_PLATFORM_SEND_GIFT:

@@ -37,7 +37,7 @@ namespace NAssist
         
     public:
 
-        HttpRequest(const std::string& host, const std::string& uri, HttpRequestMethod request_method);
+        HttpRequest(const std::string& url, const std::string& uri, HttpRequestMethod request_method);
         ~HttpRequest();
         void AddHeader(const std::string& key,const std::string& value);
         
@@ -49,7 +49,7 @@ namespace NAssist
         const boost::beast::http::response<boost::beast::http::dynamic_body>& GetRespons(){return m_res;}
 
         
-        static std::shared_ptr<HttpRequest> CreateRequest(const std::string& host, const std::string& uri, HttpRequestMethod request_method);
+        static std::shared_ptr<HttpRequest> CreateRequest(const std::string& url, const std::string& uri, HttpRequestMethod request_method);
 
     private:
         std::string m_Host;

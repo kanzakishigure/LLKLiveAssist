@@ -50,7 +50,7 @@ namespace NAssist
             WS
         };
 
-        WebsocketClient(const std::string& host);
+        explicit WebsocketClient(const std::string& host);
         ~WebsocketClient();
         void Connect();
         void Send(const std::vector<uint8_t>& data);
@@ -110,7 +110,7 @@ namespace NAssist
 			WS
 		};
 
-		AsyncWebsocketClient(const std::string& host);
+		explicit AsyncWebsocketClient(const std::string& host);
 		~AsyncWebsocketClient();
 		
 

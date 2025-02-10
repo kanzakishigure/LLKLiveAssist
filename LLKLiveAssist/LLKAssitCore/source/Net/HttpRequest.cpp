@@ -9,14 +9,14 @@
 
 namespace NAssist {
 std::shared_ptr<HttpRequest>
-HttpRequest::CreateRequest(const std::string &host, const std::string &uri,
+HttpRequest::CreateRequest(const std::string &url, const std::string &uri,
                            HttpRequestMethod request_method) {
-  return std::make_shared<HttpRequest>(host, uri, request_method);
+  return std::make_shared<HttpRequest>(url, uri, request_method);
 }
 
-HttpRequest::HttpRequest(const std::string &host, const std::string &uri,
+HttpRequest::HttpRequest(const std::string &url, const std::string &uri,
                          const HttpRequestMethod request_method)
-    : m_Host(host), m_Uri(uri),
+    : m_Host(url), m_Uri(uri),
       m_tcp_stream(m_io_ctx),
       m_ssl_ctx(boost::asio::ssl::context::tlsv12_client),
       m_ssl_stream(m_io_ctx, m_ssl_ctx) {
@@ -24,12 +24,12 @@ HttpRequest::HttpRequest(const std::string &host, const std::string &uri,
   try {
     const std::string http_protocol = "http://";
     const std::string https_protocol = "https://";
-    auto version = 10;
+    auto version = 11;
     std::string port;
 
     // These objects perform our I/O
 
-    auto resolve_host = host;
+    auto resolve_host = url;
 
     if (resolve_host.find(http_protocol) != std::string::npos) {
       port = "80";
@@ -155,7 +155,6 @@ void HttpRequest::SetTarget(const std::string& url)
 std::string HttpRequest::Receive() {
   // Send the HTTP request to the remote host
   std::string result;
-  
   try {
 
     

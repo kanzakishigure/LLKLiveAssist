@@ -1,19 +1,29 @@
 ﻿#include "GSoVITSAssist.h"
 #include "ModuleManager.h"
 #include "Net/HttpRequest.h"
-#include <boost/json/parse.hpp>
+#include "Net/TCPClient.h"
+
+
+#include <boost/process/v1/detail/child_decl.hpp>
+#include <boost/process/v1/io.hpp>
+#include <boost/process/v1/start_dir.hpp>
 #include <cstdint>
+#include <cstdio>
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <sstream>
+#include <stdint.h>
 #include <string>
 #include <vector>
 
-
 namespace NAssist {
 
-const std::string request_host = "http://127.0.0.1:9880";
+const std::string request_url = "http://127.0.0.1:9880";
+const std::string request_host = "127.0.0.1";
+const uint64_t request_port = 9880;
 const std::string inference_endpoint = "/tts";
 const std::string control_endpoint = "/control";
 const std::string set_gpt_weights_endpoint = "/set_gpt_weights";
@@ -37,19 +47,50 @@ void GSoVITSAssist::init() {
     }
   }
 
+  
+}
+
+void GSoVITSAssist::pushAudioStream(std::vector<uint8_t> bytes_stream) {
+  std::lock_guard<std::mutex> lg(m_audio_mutex);
+  m_audio_buffers.push(bytes_stream);
+}
+std::vector<uint8_t> GSoVITSAssist::popAudioSteam() {
+  std::lock_guard<std::mutex> lg(m_audio_mutex);
+  std::vector<uint8_t> result;
+  if (!m_audio_buffers.empty()) {
+    result = m_audio_buffers.front();
+    m_audio_buffers.pop();
+  }
+  return result;
+}
+void GSoVITSAssist::start() {
+  // 启动gpt-sovits实例
+  {    
+    std::string gps_sovist_args = std::format("{0}runtime/python.exe {0}api_v2.py -a {1} -p {2} -c {0}GPT_SoVITS/configs/tts_infer.yaml",GPT_SOVITS_ROOT,request_host,std::to_string(request_port));
+    m_gpt_sovist_process = std::make_unique<boost::process::child>(gps_sovist_args,boost::process::start_dir(GPT_SOVITS_ROOT));
+    
+    // 尝试使用tcp连接服务
+    TCPClient tcp(request_host, request_port);
+    while (true) {
+      if(tcp.try_connect())
+      {
+        break;
+      }
+    }
+    std::cout << "gpt-sovist init success" << std::endl;
+  }
   // set the sovits model and gpt model
   {
-
     std::shared_ptr<HttpRequest> request = HttpRequest::CreateRequest(
-        request_host, set_gpt_weights_endpoint, HttpRequestMethod::get);
-    request->AddHeader("weights_path", m_GSoVITSModel.gpt_weights);
+        request_url, set_gpt_weights_endpoint, HttpRequestMethod::get);
+    
     std::cout << request->Receive() << std::endl;
   }
-  {
 
+  {
     std::shared_ptr<HttpRequest> request = HttpRequest::CreateRequest(
-        request_host, set_sovits_weights_endpoint, HttpRequestMethod::get);
-    request->AddHeader("weights_path", m_GSoVITSModel.sovits_weights);
+        request_url, set_sovits_weights_endpoint, HttpRequestMethod::get);
+  
     std::cout << request->Receive() << std::endl;
   }
   // generate request body use data from model
@@ -64,7 +105,7 @@ void GSoVITSAssist::init() {
     while (!m_stoped) {
       std::unique_lock<std::mutex> lock(m_msg_mutex); // 获取锁
       m_msg_condition.wait(lock,
-                       [this] { return !m_msg_queue.empty(); }); // 等待条件
+                           [this] { return !m_msg_queue.empty(); }); // 等待条件
       while (!m_msg_queue.empty()) {
         std::string msg = m_msg_queue.front();
         m_msg_queue.pop();
@@ -74,25 +115,9 @@ void GSoVITSAssist::init() {
       }
     }
   });
-}
 
-void GSoVITSAssist::pushAudioStream(std::vector<uint8_t> bytes_stream)
-{
-  std::lock_guard<std::mutex> lg(m_audio_mutex);
-  m_audio_buffers.push(bytes_stream);
+
 }
-std::vector<uint8_t> GSoVITSAssist::popAudioSteam()
-{
-  std::lock_guard<std::mutex> lg(m_audio_mutex);
-  std::vector<uint8_t> result;
-  if(!m_audio_buffers.empty())
-  {
-    result =  m_audio_buffers.front();
-    m_audio_buffers.pop();
-  }
-  return  result;
-}
-void GSoVITSAssist::start() {}
 
 void GSoVITSAssist::shutdown() {
   std::lock_guard<std::mutex> lg(m_msg_mutex);
@@ -117,27 +142,29 @@ void GSoVITSAssist::commitRequest2GSoVits(const std::string &msg) {
 
     std::string json_string = boost::json::serialize(js);
 
-    //receive audio data
+    // receive audio data
     {
       std::shared_ptr<HttpRequest> request = HttpRequest::CreateRequest(
-          request_host, inference_endpoint, HttpRequestMethod::post);
+          request_url, inference_endpoint, HttpRequestMethod::post);
 
       request->AddHeader("Content-Type", "application/json");
       request->SetContent(json_string);
 
-      request->AsyncReceive([request, msg](boost::beast::error_code ec, std::size_t transfered) {
-            if (ec) {
-              std::cout << "error" << ec.what() << std::endl;
-              return;
-            }
-            auto response = request->GetRespons();
-            auto str_data = boost::beast::buffers_to_string(response.body().data());
-            auto byte_stream = std::vector<uint8_t>(str_data.begin(),str_data.end());
-            auto gsovits_assist = ModuleManager::getInstance().getModule<GSoVITSAssist>();
+      request->AsyncReceive([request, msg](boost::beast::error_code ec,
+                                           std::size_t transfered) {
+        if (ec) {
+          std::cout << "error" << ec.what() << std::endl;
+          return;
+        }
+        auto response = request->GetRespons();
+        auto str_data = boost::beast::buffers_to_string(response.body().data());
+        auto byte_stream =
+            std::vector<uint8_t>(str_data.begin(), str_data.end());
+        auto gsovits_assist =
+            ModuleManager::getInstance().getModule<GSoVITSAssist>();
 
-            gsovits_assist->pushAudioStream(byte_stream);
-            
-          });
+        gsovits_assist->pushAudioStream(byte_stream);
+      });
     }
   }
 }

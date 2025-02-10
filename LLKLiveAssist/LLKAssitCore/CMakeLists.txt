@@ -18,7 +18,9 @@ set_target_properties(${TARGET_NAME} PROPERTIES FOLDER "Assist")
 
 target_compile_options(${TARGET_NAME} PUBLIC "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/WX->") #将警告视为错误
 
+# 添加项目预定义宏文件
 target_compile_definitions(${TARGET_NAME} PRIVATE MODEL_CONFIG_PATH="${LLKLiveAssist_ROOT_DIR}/Config/Model/model.json")
+target_compile_definitions(${TARGET_NAME} PRIVATE GPT_SOVITS_ROOT="M:/GPT-SoVITS-v2-240821/")
 
 
 
@@ -37,11 +39,7 @@ endif()
 set(Boost_INCLUDE_DIRS "${BOOST_ROOT}/include")
 set(Boost_LIBRARY_DIRS "${BOOST_ROOT}/lib")
 
-
-
-
-find_package(Boost 1.87 REQUIRED COMPONENTS system regex json)
-
+find_package(Boost 1.87 REQUIRED COMPONENTS system regex json process)
 if(Boost_FOUND)
   link_directories(${Boost_LIBRARY_DIRS})
   include_directories(${Boost_INCLUDE_DIRS})
