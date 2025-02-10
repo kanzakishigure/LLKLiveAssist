@@ -1,0 +1,9 @@
+[submodule "Vendor/ElaWidgetTools"]
+	path = Vendor/ElaWidgetTools
+	url = https://github.com/Liniyous/ElaWidgetTools.git
+[submodule "Vendor/GPT-SoVITS"]
+	path = Vendor/GPT-SoVITS
+	url = https://github.com/RVC-Boss/GPT-SoVITS.git
+[submodule "Vendor/miniaudio"]
+	path = Vendor/miniaudio
+	url = https://github.com/mackron/miniaudio.git
