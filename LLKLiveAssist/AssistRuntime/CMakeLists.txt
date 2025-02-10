@@ -20,6 +20,10 @@ set_target_properties(${TARGET_NAME} PROPERTIES FOLDER "Assist")
 
 target_link_libraries(${TARGET_NAME} LLKAssitCore)
 
+target_include_directories(
+  ${TARGET_NAME} 
+  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
@@ -48,3 +52,76 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     message("COPY openssl DLL ${LLKLiveAssist_ROOT_DIR}/Vendor/OpenSSL/bin/libssl-3-x64.dll")
 
 endif()
+
+
+
+
+# 查找qt
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+  set(CMAKE_PREFIX_PATH ${LLKLiveAssist_ROOT_DIR}/Vendor/QT/5.12.12/mingw73_64/lib/cmake/QT5)
+  
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+  set(CMAKE_PREFIX_PATH ${LLKLiveAssist_ROOT_DIR}/Vendor/QT/5.12.12/msvc2017_64/lib/cmake/QT5)
+  
+endif()
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets REQUIRED)
+if(Qt5Widgets_FOUND)
+  target_link_libraries(${TARGET_NAME}  ${Qt5Widgets_LIBRARIES})
+
+  target_include_directories(
+    ${TARGET_NAME} 
+    PUBLIC ${Qt5Widgets_INCLUDE_DIRS})
+endif()
+
+
+#Qt 提供了一个名为 windeployqt 的工具，可以自动收集程序依赖的 DLL、插件、翻译文件等，并拷贝到构建目录。
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    set(QT_PATH ${LLKLiveAssist_ROOT_DIR}/Vendor/QT/5.12.12/mingw73_64)
+    set(MY_APP_EXE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}/${TARGET_NAME}/${TARGET_NAME}.exe)   
+
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+            COMMAND ${QT_PATH}/bin/windeployqt 
+            --debug 
+            --no-compiler-runtime 
+            --no-translations 
+            ${MY_APP_EXE}
+            COMMENT "Deploying Qt DLLs with windeployqt...")
+    else()
+        add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+            COMMAND ${QT_PATH}/bin/windeployqt 
+            --release  
+            --no-compiler-runtime 
+            --no-translations 
+            ${MY_APP_EXE}
+            COMMENT "Deploying Qt DLLs with windeployqt...")
+    endif()
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    set(QT_PATH ${LLKLiveAssist_ROOT_DIR}/Vendor/QT/5.12.12/msvc2017_64)
+    set(MY_APP_EXE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}/${TARGET_NAME}/$<CONFIG>/${TARGET_NAME}.exe)   
+
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+    COMMAND cmd.exe /c if "$(Configuration)" == "Debug"
+    ${QT_PATH}/bin/windeployqt 
+    --debug 
+    --no-compiler-runtime # 避免拷贝编译器运行时（可选）
+    --no-translations     # 可选：不拷贝翻译文件
+
+    ${MY_APP_EXE}         # 指定目标可执行文件
+    COMMENT "Deploying Qt DLLs with windeployqt...")   
+    
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+    COMMAND cmd.exe /c if "$(Configuration)" == "Release"
+    ${QT_PATH}/bin/windeployqt 
+    --release  
+    --no-compiler-runtime # 避免拷贝编译器运行时（可选）
+    --no-translations     # 可选：不拷贝翻译文件
+    
+    ${MY_APP_EXE}         # 指定目标可执行文件
+    COMMENT "Deploying Qt DLLs with windeployqt...")
+
+
+endif()
+
+
