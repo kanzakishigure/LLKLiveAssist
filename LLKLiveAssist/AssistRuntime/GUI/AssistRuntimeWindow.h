@@ -1,24 +1,29 @@
-#pragma once 
+#pragma once
 
+#include "ElaWindow.h"
 
 #include <QMainWindow>
-#include <qwidget.h>
-#include "Panel/TaskPanel.h"
-#include "Panel/ConsoleDilogPanel.h"
-#include "Panel/TaskConfigPanel.h"
+
+class ElaContentDialog;
+
 namespace NAssist {
+class HomePage;
+class AssistRuntimeWindow : public ElaWindow {
 
-    class AssistRuntimeWindow : public QMainWindow
-    {
-        TaskPanel* m_taskPanel;
-        TaskConfigPanel* m_taskConfigPanel;
-        ConsoleDilogPanel* m_consoleDilogPanel;
+  Q_OBJECT
 
-        QWidget* m_CentralWidget;
-    public:
-        explicit AssistRuntimeWindow(QWidget *parent = nullptr);
+public:
+  explicit AssistRuntimeWindow(QWidget *parent = nullptr);
+  void initWindow();
+  void initEdgeLayout();
+  void initContent();
 
-   
+private:
+  // ela widget
+  ElaContentDialog *_closeDialog{nullptr};
+  HomePage *m_homePage{nullptr};
+  
 
-    };
-}
+  QWidget *m_CentralWidget;
+};
+} // namespace NAssist

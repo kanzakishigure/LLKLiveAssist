@@ -4,6 +4,11 @@
 #include <variant>
 #include <vector>
 #include <memory>
+
+#include "BiliClientAssist.h"
+#include "GSoVITSAssist.h"
+#include "AudioAssist.h"
+
 namespace NAssist {
 class ModuleManager {
 public:
@@ -17,6 +22,9 @@ public:
   std::variant<bool,std::error_code> addPlugin(std::shared_ptr<PluginBase> plugin);
   void startAllModule();
   bool startModule(PluginType type);
+
+  void stopAllModule();
+  bool stopModule(PluginType type);
 
   template<typename T>
   std::variant<std::shared_ptr<T>,std::error_code> tryGetModule()

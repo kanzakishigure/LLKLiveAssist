@@ -29,6 +29,9 @@ public:
   void commitRequest2GSoVits(const std::string& msg);
   void pushAudioStream(std::vector<uint8_t> bytes);
   std::vector<uint8_t> popAudioSteam();
+
+  GSoVITSModel getGSoVITSModel() { return m_GSoVITSModel; }
+  void setGSoVITSModel(GSoVITSModel model) {  m_GSoVITSModel = model; }
 private:
   bool  m_stoped = true;
   

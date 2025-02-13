@@ -52,14 +52,14 @@ namespace NAssist {
 
 	Sound::Sound(std::vector<uint8_t> bytes, std::shared_ptr<AudioEngine> engine) : m_audio_buffer(nullptr) 
 	{
-
+		auto audio_assist = ModuleManager::getInstance().getModule<AudioAssist>();
 		m_buffer = std::vector<uint8_t>(bytes.begin(), bytes.end());
 		// decoder the memory  to  resolve audiostream
 		ma_uint64 size_in_frames = 0;
 		void* frames_out = nullptr;
 		ma_channel channels = ma_engine_get_channels(engine->GetPMaEngine());
-		ma_format format = ma_format_s16;
-		ma_decoder_config decoder_config = ma_decoder_config_init(format, channels, 16000);
+		ma_format format = audio_assist->getAudioConfig().Dcoderformat;
+		ma_decoder_config decoder_config = ma_decoder_config_init(format, channels, audio_assist->getAudioConfig().DcoderSampleRate);
 		ma_result decode_memory_res = ma_decode_memory(m_buffer.data(), m_buffer.size(),
 				&decoder_config, &size_in_frames, &frames_out);
 		
@@ -71,7 +71,7 @@ namespace NAssist {
 		// audio config
 		ma_audio_buffer_config audio_buffer_config = ma_audio_buffer_config_init(
 			format, channels, size_in_frames, m_buffer.data(), nullptr);
-		audio_buffer_config.sampleRate = 16000;
+		audio_buffer_config.sampleRate = audio_assist->getAudioConfig().AudioSampleRate;
 
 		// allocate audio buffer and copy the data
 		ma_result audio_buffer_alloc_res = ma_audio_buffer_alloc_and_init(&audio_buffer_config, &m_audio_buffer);

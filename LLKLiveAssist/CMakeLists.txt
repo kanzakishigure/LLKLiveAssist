@@ -1,4 +1,4 @@
-set(PLUGIN_ROOT_DIR "${NAZAKI_ROOT_DIR}/Plugin")
+
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     add_compile_options("/MP")

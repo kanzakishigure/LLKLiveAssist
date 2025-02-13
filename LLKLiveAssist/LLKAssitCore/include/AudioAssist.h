@@ -39,6 +39,13 @@ namespace NAssist {
 		ma_sound m_sound;
 		std::vector<uint8_t> m_buffer;
 	};
+
+	struct AudioConfig
+	{
+		ma_format Dcoderformat = ma_format_s16;
+		int DcoderSampleRate = 16000;
+		int AudioSampleRate = 16000;
+	};
 	class AudioAssist : public PluginBase {
 	public:
 		virtual void init() override;
@@ -49,12 +56,22 @@ namespace NAssist {
 		virtual PluginType getType() override { return PluginType::Audio; }
 		static PluginType getStaticType() { return PluginType::Audio; }
 
+		AudioConfig getAudioConfig()
+		{
+			return m_AudioConfig;
+		}
+		void setAudioConfig(AudioConfig cfg)
+		{
+			m_AudioConfig = cfg;
+		}
+
 	private:
 
 		std::shared_ptr<PeriodicTask> m_PlaybackTask;
 		std::thread m_PlaybackThread;
 		std::vector<std::shared_ptr<Sound>> m_PlaybackQueue;
 		std::shared_ptr<AudioEngine> m_Engine;
+		AudioConfig m_AudioConfig;
 
 
 

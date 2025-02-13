@@ -24,6 +24,13 @@ namespace NAssist
             plugin->start();
         }
     }
+    void ModuleManager::stopAllModule()
+    {
+        for (const auto &plugin : m_plugins)
+        {
+            plugin->shutdown();
+        }
+    }
     void ModuleManager::update()
     {
         for (const auto &plugin : m_plugins)
@@ -38,6 +45,19 @@ namespace NAssist
             if (plugin->getStaticType() == type)
             {
                 plugin->start();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool ModuleManager::stopModule(PluginType type)
+    {
+        for (const auto &plugin : m_plugins)
+        {
+            if (plugin->getStaticType() == type)
+            {
+                plugin->shutdown();
                 return true;
             }
         }

@@ -37,7 +37,8 @@ public:
    virtual PluginType getType() override { return PluginType::BiliClient; }
   static PluginType getStaticType() { return PluginType::BiliClient; }
   
-
+  std::string  getUserCode() { return m_Code;}
+  void setUserCode(const std::string& user_code) { m_Code = user_code; }
 private:
   
   
@@ -52,7 +53,7 @@ private:
   boost::json::value RequestWebUTF8(std::string host, std::string uri, HttpRequestMethod request_method, std::string param, std::string cookie = "");
   void  AuthWebsocket();
 
-
+  
   
 
   std::string m_AccessKey;        //直播创作者服务中心【个人资料】页面获取

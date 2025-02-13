@@ -62,7 +62,7 @@ void BiliClientAssist::init() {
     m_AccessKey = "BP2Yl3cBDNc225qmrK53Fsyv";
     m_AccessKeySecret = "idiGra89obnAzmlZNjWRnw9jDi6vY6";
     m_AppId = "1739800103262";
-    m_Code = "BVJSMTS1T88W9";
+    m_Code = "ECXQ2PEZ63289";
     SetConsoleOutputCP(CP_UTF8);
     
 }
