@@ -1,4 +1,6 @@
 #include "BiliClientAssist.h"
+#include <cmath>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -63,45 +65,75 @@ void BiliClientAssist::init() {
     m_AccessKeySecret = "idiGra89obnAzmlZNjWRnw9jDi6vY6";
     m_AppId = "1739800103262";
     m_Code = "ECXQ2PEZ63289";
+    
+    
     SetConsoleOutputCP(CP_UTF8);
+
+    app_heart_periodic_task = std::make_shared<PeriodicTask>([this]() {
+
+        std::cout << "app heartbeat" << std::endl;
+        HeartBeatInteractivePlay(m_AppStartInfo.GameInfo.GameId);
+  
+  
+        }, 20);
+  
+     game_heart_periodic_task = std::make_shared<PeriodicTask>([this]() {
+  
+        std::cout << "game heartbeat" << std::endl;
+        HeartBeatWebsocketClient();
+        
+        }, 30);
     
 }
-void BiliClientAssist::shutdown() {}
-void BiliClientAssist::drawUI() {
- 
-   
+void BiliClientAssist::shutdown() {
+    
+    if (msgthread.joinable())
+    {
+        m_stoped.set_value();
+        
+        msgthread.join();
+    }
+	
+    
+    app_heart_periodic_task->Stop();
+    game_heart_periodic_task->Stop();
 
+	if (appthread.joinable())
+	{
+		appthread.join();
+	}
+	if (gamethread.joinable())
+	{
+        gamethread.join();
+	}
+    
 
 }
-void BiliClientAssist::start() {
+void BiliClientAssist::drawUI() {
+ 
+    
+
+}
+std::error_code  BiliClientAssist::start() {
   std::cout << "BiliClientAssist Start function\n";
   StartInteractivePlay();
   AuthWebsocket();
   
 
 
-  auto app_heart_periodic_task = std::make_shared<PeriodicTask>([this]() {
-
-	  std::cout << "app heartbeat" << std::endl;
-	  HeartBeatInteractivePlay(m_AppStartInfo.GameInfo.GameId);
-
-
-	  }, 20);
-
-  auto game_heart_periodic_task = std::make_shared<PeriodicTask>([this]() {
-
-	  std::cout << "game heartbeat" << std::endl;
-	  HeartBeatWebsocketClient();
-      
-	  }, 30);
-
-   appthread  = std::thread([this,app_heart_periodic_task]() {app_heart_periodic_task->Start(); });
-   gamethread = std::thread([this,game_heart_periodic_task]() {game_heart_periodic_task->Start(); });
-   msgthread = std::thread([this]() { 
-    while (true){
-       WebsocketClientReceive();
-   } });
    
+
+   appthread  = std::thread([this]() {app_heart_periodic_task->Start(); });
+   gamethread = std::thread([this]() {game_heart_periodic_task->Start(); });
+
+   m_stoped = std::promise<void>();
+   std::shared_future<void> future = m_stoped.get_future();
+   msgthread = std::thread([this]( std::shared_future<void> future) { 
+    while (future.wait_for(std::chrono::milliseconds(100)) == std::future_status::timeout){
+       WebsocketClientReceive();
+   } },std::move(future));
+   
+    return make_error_code(audio_engine_errc::success);
 }
 
 void BiliClientAssist::StartInteractivePlay() {
@@ -268,6 +300,8 @@ void BiliClientAssist::WebsocketClientReceive()
     
     */
     auto bytes = m_bili_websocket->Receive();
+    if (bytes.empty())
+        return;
     auto packet = bytes2ProtoPacket(bytes);
     std::string result = std::string(packet.body.begin(),packet.body.end());
     

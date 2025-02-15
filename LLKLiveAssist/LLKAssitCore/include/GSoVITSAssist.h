@@ -18,7 +18,7 @@ class GSoVITSAssist : public PluginBase {
 public:
 
   virtual void init() override;
-  virtual void start() override;
+  virtual std::error_code  start() override;
   virtual void shutdown() override;
   virtual void drawUI() override;
 

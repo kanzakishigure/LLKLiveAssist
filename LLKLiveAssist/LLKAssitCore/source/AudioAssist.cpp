@@ -35,16 +35,23 @@ namespace NAssist {
 
 	void AudioAssist::shutdown() 
 	{
-
 		std::cout << "AudioAssist Shutdown \n" << std::endl;
+		m_PlaybackTask->Stop();
+		if (m_PlaybackThread.joinable())
+		{
+			m_PlaybackThread.join();
+		}
+		
 	}
 
 	void AudioAssist::drawUI() {}
 
-	void AudioAssist::start() 
+	std::error_code  AudioAssist::start()
 	{
 		std::cout << "AudioAssist Start \n" << std::endl;
 		m_PlaybackThread = std::thread([this] {m_PlaybackTask->Start();});
+
+		return make_error_code(audio_engine_errc::success);
 
 	}
 

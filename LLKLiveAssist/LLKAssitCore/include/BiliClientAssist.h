@@ -1,5 +1,6 @@
 #pragma once
 #include "PluginBase.h"
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -10,7 +11,7 @@
 #include "Data/BiliData.h"
 
 #include <boost/json.hpp>
-
+#include <future> 
 
 namespace NAssist {
 
@@ -30,7 +31,7 @@ public:
   
   
   virtual void init() override;
-  virtual void start() override;
+  virtual std::error_code  start() override;
   virtual void shutdown() override;
   virtual void drawUI() override;
 
@@ -70,6 +71,10 @@ private:
   std::thread appthread;
   std::thread gamethread;
   std::thread msgthread;
+  std::promise<void> m_stoped; 
+
+  std::shared_ptr<PeriodicTask> app_heart_periodic_task;
+  std::shared_ptr<PeriodicTask> game_heart_periodic_task;
  
 };
 } // namespace NAssist

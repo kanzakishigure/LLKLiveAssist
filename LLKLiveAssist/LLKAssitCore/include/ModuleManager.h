@@ -8,7 +8,7 @@
 #include "BiliClientAssist.h"
 #include "GSoVITSAssist.h"
 #include "AudioAssist.h"
-
+#include "Core/ErrorCode.h"
 namespace NAssist {
 class ModuleManager {
 public:
@@ -17,10 +17,10 @@ public:
 
    
    void shutdown();
-   void update();
+
 
   std::variant<bool,std::error_code> addPlugin(std::shared_ptr<PluginBase> plugin);
-  void startAllModule();
+  std::error_code startAllModule();
   bool startModule(PluginType type);
 
   void stopAllModule();

@@ -1,5 +1,5 @@
 #pragma once
-
+#include "Core/ErrorCode.h"
 namespace NAssist {
 
 enum class PluginType {
@@ -11,7 +11,7 @@ enum class PluginType {
 class PluginBase {
 public:
   virtual void init() = 0;
-  virtual void start() = 0;
+  virtual std::error_code start() = 0;
   virtual void shutdown() = 0;
   virtual void drawUI() = 0;
 

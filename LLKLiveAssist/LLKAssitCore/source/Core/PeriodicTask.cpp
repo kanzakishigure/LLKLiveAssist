@@ -56,7 +56,8 @@ namespace NAssist
 			std::cout << e.what() << std::endl;
 			return;
 		}
-	
+		if(!m_isRunning)
+		return;
 		m_task();
 		
 		m_timer.expires_at(m_timer.expiry()+boost::asio::chrono::seconds(m_interval));
