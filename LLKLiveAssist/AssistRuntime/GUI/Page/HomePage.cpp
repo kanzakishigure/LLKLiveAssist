@@ -5,33 +5,35 @@
 #include <QHBoxLayout>
 #include <QMouseEvent>
 #include <QPainter>
-#include <QVBoxLayout>
 #include <QTimer>
+#include <QVBoxLayout>
 #include <system_error>
+
 
 #include "Def.h"
 #include "ElaAcrylicUrlCard.h"
 #include "ElaCheckBox.h"
+#include "ElaComboBox.h"
 #include "ElaFlowLayout.h"
 #include "ElaIcon.h"
 #include "ElaIconButton.h"
 #include "ElaImageCard.h"
+#include "ElaLineEdit.h"
 #include "ElaLog.h"
 #include "ElaMenu.h"
 #include "ElaMessageBar.h"
 #include "ElaNavigationRouter.h"
+#include "ElaPivot.h"
 #include "ElaPopularCard.h"
+#include "ElaPushButton.h"
 #include "ElaScrollArea.h"
 #include "ElaScrollPageArea.h"
+#include "ElaSpinBox.h"
 #include "ElaText.h"
+#include "ElaToggleButton.h"
 #include "ElaToggleSwitch.h"
 #include "ElaToolTip.h"
-#include "ElaPivot.h"
-#include "ElaPushButton.h"
-#include "ElaSpinBox.h"
-#include "ElaToggleButton.h"
-#include "ElaLineEdit.h"
-#include "ElaComboBox.h"
+
 
 #include <ModuleManager.h>
 
@@ -48,11 +50,12 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
   // 标题卡片区域
   ElaText *desText = new ElaText("LLK Live Assist", this);
   desText->setTextPixelSize(38);
-  desText->setStyleSheet("QLabel{color : rgb(52, 58, 64)}");
-  ElaText *titleText = new ElaText("欢迎使用露露卡直播小助手  ✿✿ヽ(°▽°)ノ✿", this);
-  titleText->setTextPixelSize(24);
   
-  titleText->setStyleSheet("QLabel{color : rgb(109, 196, 190)}");
+  ElaText *titleText =
+      new ElaText("欢迎使用露露卡直播小助手  ✿✿ヽ(°▽°)ノ✿", this);
+  titleText->setTextPixelSize(24);
+
+  
 
   QVBoxLayout *titleLayout = new QVBoxLayout();
   titleLayout->setContentsMargins(30, 60, 0, 0);
@@ -76,74 +79,73 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
   urlCard1->setTitle("LLK Live Assist Github");
   urlCard1->setSubTitle("使用璐璐卡直播小助手");
   ElaToolTip *urlCard1ToolTip = new ElaToolTip(urlCard1);
-  urlCard1ToolTip->setToolTip("https://github.com/kanzakishigure/LLKLiveAssist");
-  
-  
+  urlCard1ToolTip->setToolTip(
+      "https://github.com/kanzakishigure/LLKLiveAssist");
 
-    ElaToggleSwitch* start_toggleSwitch = new ElaToggleSwitch(this);
-    ElaScrollPageArea* start_toggleSwitchArea = new ElaScrollPageArea(this);
-    QHBoxLayout* start_toggleSwitchLayout = new QHBoxLayout(start_toggleSwitchArea);
-    ElaText* start_toggleSwitchText = new ElaText("Assist Core 已停止", this);
-   
-    start_toggleSwitchText->setTextPixelSize(18);
-    start_toggleSwitchLayout->addWidget(start_toggleSwitchText);
-    start_toggleSwitchLayout->addSpacing(50);
-    start_toggleSwitchLayout->addWidget(start_toggleSwitch);
-    
-    start_toggleSwitchLayout->addStretch();
-    
-    connect(start_toggleSwitch, &ElaToggleSwitch::toggled, this, [=](bool checked) {
-        if(checked){
+  ElaToggleSwitch *start_toggleSwitch = new ElaToggleSwitch(this);
+  ElaScrollPageArea *start_toggleSwitchArea = new ElaScrollPageArea(this);
+  QHBoxLayout *start_toggleSwitchLayout =
+      new QHBoxLayout(start_toggleSwitchArea);
+  ElaText *start_toggleSwitchText = new ElaText("Assist Core 已停止", this);
 
+  start_toggleSwitchText->setTextPixelSize(18);
+  start_toggleSwitchLayout->addWidget(start_toggleSwitchText);
+  start_toggleSwitchLayout->addSpacing(50);
+  start_toggleSwitchLayout->addWidget(start_toggleSwitch);
 
-            auto audio_assist = ModuleManager::getInstance().getModule<AudioAssist>();
-            auto sovits_assist = ModuleManager::getInstance().getModule<GSoVITSAssist>();
-            audio_assist->setAudioConfig(audio_config_data);
-            sovits_assist->setGSoVITSModel(sovits_config_data);
-            //code in another thread
-            AssistRuntime::getInstance()->stratAllModule(
-                [=](const std::error_code ec){
+  start_toggleSwitchLayout->addStretch();
 
-                    QMetaObject::invokeMethod(start_toggleSwitch, "setDisabled", Qt::QueuedConnection, Q_ARG(bool, false));
-                    if(!ec)
-                    {
-                        QMetaObject::invokeMethod(start_toggleSwitchText, "setText", Qt::QueuedConnection, Q_ARG(QString, "Assist Core 已启动"));
-						
-                    }
-                    else {
-                        QMetaObject::invokeMethod(start_toggleSwitchText, "setText", Qt::QueuedConnection, Q_ARG(QString, "Assist Core 启动失败,已停止"));           
-                    }
-                    
+  connect(
+      start_toggleSwitch, &ElaToggleSwitch::toggled, this, [=](bool checked) {
+        if (checked) {
+
+          auto audio_assist =
+              ModuleManager::getInstance().getModule<AudioAssist>();
+          auto sovits_assist =
+              ModuleManager::getInstance().getModule<GSoVITSAssist>();
+          audio_assist->setAudioConfig(audio_config_data);
+          sovits_assist->setGSoVITSModel(sovits_config_data);
+          // code in another thread
+          AssistRuntime::getInstance()->stratAllModule(
+              [start_toggleSwitch,start_toggleSwitchText](const std::error_code ec) {
+                QMetaObject::invokeMethod(start_toggleSwitch, "setDisabled",
+                                          Qt::QueuedConnection,
+                                          Q_ARG(bool, false));
+                if (!ec) {
+                  QMetaObject::invokeMethod(
+                      start_toggleSwitchText, "setText", Qt::QueuedConnection,
+                      Q_ARG(QString, "Assist Core 已启动"));
+
+                } else {
+                  QMetaObject::invokeMethod(
+                      start_toggleSwitchText, "setText", Qt::QueuedConnection,
+                      Q_ARG(QString, "Assist Core 启动失败,已停止"));
                 }
-            );
-            //code in another thread
-            start_toggleSwitchText->setText("Assist Core 启动中");
-            start_toggleSwitch->setDisabled(true);
-            
-        }
-        else {
-            //code in another thread
-            AssistRuntime::getInstance()->stopAllModule([=](const std::error_code ec){
+              });
+          // code in another thread
+          start_toggleSwitchText->setText("Assist Core 启动中");
+          start_toggleSwitch->setDisabled(true);
 
-                QMetaObject::invokeMethod(start_toggleSwitch, "setDisabled", Qt::QueuedConnection, Q_ARG(bool, false));
-                QMetaObject::invokeMethod(start_toggleSwitchText, "setText", Qt::QueuedConnection, Q_ARG(QString, "Assist Core 已停止"));
-                if(ec)
-                {
-                    //ElaMessageBar::error(ElaMessageBarType::Right, "Assist Core Error", ec.message().c_str(),0 );
+        } else {
+          // code in another thread
+          AssistRuntime::getInstance()->stopAllModule(
+              [=](const std::error_code ec) {
+                QMetaObject::invokeMethod(start_toggleSwitch, "setDisabled",
+                                          Qt::QueuedConnection,
+                                          Q_ARG(bool, false));
+                QMetaObject::invokeMethod(start_toggleSwitchText, "setText",
+                                          Qt::QueuedConnection,
+                                          Q_ARG(QString, "Assist Core 已停止"));
+                if (ec) {
+                  // ElaMessageBar::error(ElaMessageBarType::Right, "Assist Core
+                  // Error", ec.message().c_str(),0 );
                 }
-                
-
-            });
-            //code in another thread
-            start_toggleSwitchText->setText("Assist Core 停止中");
-            start_toggleSwitch->setDisabled(true);
+              });
+          // code in another thread
+          start_toggleSwitchText->setText("Assist Core 停止中");
+          start_toggleSwitch->setDisabled(true);
         }
-        
-    });
-   
-  
-
-  
+      });
 
   ElaScrollArea *cardScrollArea = new ElaScrollArea(this);
   cardScrollArea->setWidgetResizable(true);
@@ -173,9 +175,6 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
   backgroundLayout->addWidget(cardScrollArea);
 
   // 推荐卡片
- 
-    
-
 
   ElaText *flowText = new ElaText("LLK Core plugings", this);
   flowText->setTextPixelSize(20);
@@ -185,22 +184,13 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
 
   // ElaFlowLayout
 
-  ElaFlowLayout* flowLayout = new ElaFlowLayout(0, 5, 5);
+  ElaFlowLayout *flowLayout = new ElaFlowLayout(0, 5, 5);
   flowLayout->setContentsMargins(30, 0, 0, 0);
   flowLayout->setIsAnimation(true);
-  
 
-
-
-
-
-  
-  
-  
-  
-  QVBoxLayout* pivotLayout = new QVBoxLayout();
+  QVBoxLayout *pivotLayout = new QVBoxLayout();
   pivotLayout->setContentsMargins(30, 0, 0, 0);
-  ElaScrollPageArea* pivotArea = new ElaScrollPageArea(this);
+  ElaScrollPageArea *pivotArea = new ElaScrollPageArea(this);
   m_pivot = new ElaPivot(pivotArea);
   m_pivot->setPivotSpacing(8);
   m_pivot->setMarkWidth(75);
@@ -209,133 +199,118 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
   m_pivot->appendPivot("MiniAudio");
   m_pivot->setCurrentIndex(0);
   m_pivot->setTextPixelSize(16);
-  QVBoxLayout* pivotAreaLayout = new QVBoxLayout(pivotArea);
+  QVBoxLayout *pivotAreaLayout = new QVBoxLayout(pivotArea);
   pivotAreaLayout->addWidget(m_pivot);
   pivotLayout->addWidget(pivotArea);
-  
 
-  //biliconfig
-  QWidget* bili_config = new QWidget(this);
-  QVBoxLayout* bili_config_layout = new QVBoxLayout();
+  // biliconfig
+  QWidget *bili_config = new QWidget(this);
+  QVBoxLayout *bili_config_layout = new QVBoxLayout();
   bili_config->setLayout(bili_config_layout);
 
   bili_config_layout->setContentsMargins(30, 0, 0, 0);
   bili_config_layout->addStretch();
-  
-  
+
   {
-	
-      ElaText* biliconfig_area_title = new ElaText("BILIBILI config", this);
-	  biliconfig_area_title->setTextPointSize(8);
 
-	  
-      
+    ElaText *biliconfig_area_title = new ElaText("BILIBILI config", this);
+    biliconfig_area_title->setTextPointSize(8);
 
-      auto bili_config_data = ModuleManager::getInstance().getModule<BiliClientAssist>()->getUserCode();
-	  auto uid_line_edit = new ElaLineEdit( this);
-      uid_line_edit->setText(bili_config_data.c_str());
-      
-	  ElaScrollPageArea* uid_textbox_area = new ElaScrollPageArea(this);
-	  QHBoxLayout* uid_texbox_area_Layout = new QHBoxLayout(uid_textbox_area);
-	  ElaText* toggleButtonText = new ElaText("用户身份码：", this);
-	  toggleButtonText->setTextPixelSize(15);
-      uid_texbox_area_Layout->addWidget(toggleButtonText);
-      uid_texbox_area_Layout->addWidget(uid_line_edit);
-      uid_texbox_area_Layout->addStretch();
-	
+    auto bili_config_data = ModuleManager::getInstance()
+                                .getModule<BiliClientAssist>()
+                                ->getUserCode();
+    auto uid_line_edit = new ElaLineEdit(this);
+    uid_line_edit->setText(bili_config_data.c_str());
 
-	  ElaPushButton* push_button = new ElaPushButton("获取身份码",this);
-      
-	  connect(push_button, &ElaPushButton::pressed, this, [=]() {
-          QDesktopServices::openUrl(QUrl("https://play-live.bilibili.com/"));
-		  });
+    ElaScrollPageArea *uid_textbox_area = new ElaScrollPageArea(this);
+    QHBoxLayout *uid_texbox_area_Layout = new QHBoxLayout(uid_textbox_area);
+    ElaText *toggleButtonText = new ElaText("用户身份码：", this);
+    toggleButtonText->setTextPixelSize(15);
+    uid_texbox_area_Layout->addWidget(toggleButtonText);
+    uid_texbox_area_Layout->addWidget(uid_line_edit);
+    uid_texbox_area_Layout->addStretch();
 
-      uid_texbox_area_Layout->addWidget(push_button);
-      
-      uid_texbox_area_Layout->addSpacing(10);
+    ElaPushButton *push_button = new ElaPushButton("获取身份码", this);
 
+    connect(push_button, &ElaPushButton::pressed, this, [=]() {
+      QDesktopServices::openUrl(QUrl("https://play-live.bilibili.com/"));
+    });
 
-      bili_config_layout->setSpacing(10);
-      bili_config_layout->addWidget(biliconfig_area_title);
-      bili_config_layout->addSpacing(10);
-      bili_config_layout->addWidget(uid_textbox_area);
-      bili_config_layout->addStretch();
-      
-      connect(uid_line_edit, &ElaLineEdit::focusOut, this, [=](QString text) {
-          ModuleManager::getInstance().getModule<BiliClientAssist>()->setUserCode(text.toStdString());
-          qDebug() << ModuleManager::getInstance().getModule<BiliClientAssist>()->getUserCode().c_str();
-          });
+    uid_texbox_area_Layout->addWidget(push_button);
 
-	  
+    uid_texbox_area_Layout->addSpacing(10);
+
+    bili_config_layout->setSpacing(10);
+    bili_config_layout->addWidget(biliconfig_area_title);
+    bili_config_layout->addSpacing(10);
+    bili_config_layout->addWidget(uid_textbox_area);
+    bili_config_layout->addStretch();
+
+    connect(uid_line_edit, &ElaLineEdit::focusOut, this, [=](QString text) {
+      ModuleManager::getInstance().getModule<BiliClientAssist>()->setUserCode(
+          text.toStdString());
+      qDebug() << ModuleManager::getInstance()
+                      .getModule<BiliClientAssist>()
+                      ->getUserCode()
+                      .c_str();
+    });
   }
-  
-  //sovist config
-  QWidget* sovits_config = new QWidget(this);
-  QVBoxLayout* sovits_config_layout = new QVBoxLayout();
+
+  // sovist config
+  QWidget *sovits_config = new QWidget(this);
+  QVBoxLayout *sovits_config_layout = new QVBoxLayout();
   sovits_config->setLayout(sovits_config_layout);
   sovits_config->hide();
 
   sovits_config_layout->setContentsMargins(30, 0, 0, 0);
   sovits_config_layout->addStretch();
-  
+
   {
 
-	  ElaText* sovits_config_title = new ElaText("GPT-Sovits config", this);
-      sovits_config_title->setTextPointSize(8);
-      
-	  sovits_config_layout->setSpacing(10);
-	  sovits_config_layout->addWidget(sovits_config_title);
+    ElaText *sovits_config_title = new ElaText("GPT-Sovits config", this);
+    sovits_config_title->setTextPointSize(8);
 
+    sovits_config_layout->setSpacing(10);
+    sovits_config_layout->addWidget(sovits_config_title);
 
-	  sovits_config_data = ModuleManager::getInstance().getModule<GSoVITSAssist>()->getGSoVITSModel();
+    sovits_config_data = ModuleManager::getInstance()
+                             .getModule<GSoVITSAssist>()
+                             ->getGSoVITSModel();
 
-	  
-
-      auto create_line_editor = [this,sovits_config_layout](std::string propety_name, std::string propety_value) {
-          
-		  auto propety_value_line_edit = new ElaLineEdit(this);
+    auto create_line_editor =
+        [this, sovits_config_layout](std::string propety_name,
+                                     std::string propety_value) {
+          auto propety_value_line_edit = new ElaLineEdit(this);
           propety_value_line_edit->setText(propety_value.c_str());
 
-		  ElaScrollPageArea* textbox_area = new ElaScrollPageArea(this);
-		  QHBoxLayout* texbox_area_Layout = new QHBoxLayout(textbox_area);
-		  ElaText* propety_name_text = new ElaText(propety_name.c_str(), this);
+          ElaScrollPageArea *textbox_area = new ElaScrollPageArea(this);
+          QHBoxLayout *texbox_area_Layout = new QHBoxLayout(textbox_area);
+          ElaText *propety_name_text = new ElaText(propety_name.c_str(), this);
           propety_name_text->setTextPixelSize(15);
           texbox_area_Layout->addWidget(propety_name_text);
-		  texbox_area_Layout->addWidget(propety_value_line_edit);
-		  texbox_area_Layout->addStretch();
+          texbox_area_Layout->addWidget(propety_value_line_edit);
+          texbox_area_Layout->addStretch();
 
+          connect(propety_value_line_edit, &ElaLineEdit::focusOut, this,
+                  [=](QString text) {
 
-		
+                  });
 
-		 
+          sovits_config_layout->addSpacing(10);
+          sovits_config_layout->addWidget(textbox_area);
+        };
 
-		  
-          
-		  connect(propety_value_line_edit, &ElaLineEdit::focusOut, this, [=](QString text) {
-			  
-			  });
-
-		  
-		  sovits_config_layout->addSpacing(10);
-		  sovits_config_layout->addWidget(textbox_area);
-          };
-	 
-
-      create_line_editor("model_name", sovits_config_data.model_name);
-      create_line_editor("sovits_weights", sovits_config_data.sovits_weights);
-      create_line_editor("gpt_weights", sovits_config_data.gpt_weights);
-      create_line_editor("ref_audio_path", sovits_config_data.ref_audio_path);
-      create_line_editor("prompt_text", sovits_config_data.prompt_text);
-      create_line_editor("prompt_lang", sovits_config_data.prompt_lang);
-      
-	  
-
-	  
+    create_line_editor("model_name", sovits_config_data.model_name);
+    create_line_editor("sovits_weights", sovits_config_data.sovits_weights);
+    create_line_editor("gpt_weights", sovits_config_data.gpt_weights);
+    create_line_editor("ref_audio_path", sovits_config_data.ref_audio_path);
+    create_line_editor("prompt_text", sovits_config_data.prompt_text);
+    create_line_editor("prompt_lang", sovits_config_data.prompt_lang);
   }
 
-  //audio config
-  QWidget* audio_config = new QWidget(this);
-  QVBoxLayout* audio_config_layout = new QVBoxLayout();
+  // audio config
+  QWidget *audio_config = new QWidget(this);
+  QVBoxLayout *audio_config_layout = new QVBoxLayout();
   audio_config->setLayout(audio_config_layout);
   audio_config->hide();
 
@@ -343,98 +318,103 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
   audio_config_layout->addStretch();
 
   {
-	  ElaText* audio_config_title = new ElaText("Miniaudio config", this);
-      audio_config_title->setTextPointSize(8);
+    ElaText *audio_config_title = new ElaText("Miniaudio config", this);
+    audio_config_title->setTextPointSize(8);
 
-      audio_config_layout->setSpacing(10);
-      audio_config_layout->addWidget(audio_config_title);
+    audio_config_layout->setSpacing(10);
+    audio_config_layout->addWidget(audio_config_title);
 
+    ma_format Dcoderformat = ma_format_s16;
+    int DcoderSampleRate = 16000;
+    int AudioSampleRate = 16000;
 
-	  ma_format Dcoderformat = ma_format_s16;
-	  int DcoderSampleRate = 16000;
-	  int AudioSampleRate = 16000;
+    audio_config_data =
+        ModuleManager::getInstance().getModule<AudioAssist>()->getAudioConfig();
 
-       audio_config_data = ModuleManager::getInstance().getModule<AudioAssist>()->getAudioConfig();
+    {
+      QString propety_name = "Dcoderformat";
+      ma_format format = audio_config_data.Dcoderformat;
 
-       {
-		   QString propety_name = "Dcoderformat";
-           ma_format format = audio_config_data.Dcoderformat;
-		 
+      m_comboBox = new ElaComboBox(this);
+      QStringList comboList{
+          "ma_format_u8",  "ma_format_s16", "ma_format_s24",
+          "ma_format_s32", "ma_format_f32",
+      };
+      m_comboBox->addItems(comboList);
+      m_comboBox->setCurrentIndex(static_cast<int>(Dcoderformat) - 1);
+      ElaScrollPageArea *comboBoxArea = new ElaScrollPageArea(this);
+      QHBoxLayout *comboBoxLayout = new QHBoxLayout(comboBoxArea);
+      ElaText *comboBoxText = new ElaText(propety_name, this);
+      comboBoxText->setTextPixelSize(15);
+      comboBoxLayout->addWidget(comboBoxText);
+      comboBoxLayout->addWidget(m_comboBox);
+      comboBoxLayout->addStretch();
 
-            m_comboBox = new ElaComboBox(this);
-		   QStringList comboList{
-			   "ma_format_u8",
-			   "ma_format_s16",
-			   "ma_format_s24",
-			   "ma_format_s32",
-			   "ma_format_f32", };
-           m_comboBox->addItems(comboList);
-           m_comboBox->setCurrentIndex(static_cast<int>(Dcoderformat)-1);
-		   ElaScrollPageArea* comboBoxArea = new ElaScrollPageArea(this);
-		   QHBoxLayout* comboBoxLayout = new QHBoxLayout(comboBoxArea);
-		   ElaText* comboBoxText = new ElaText(propety_name, this);
-		   comboBoxText->setTextPixelSize(15);
-		   comboBoxLayout->addWidget(comboBoxText);
-		   comboBoxLayout->addWidget(m_comboBox);
-		   comboBoxLayout->addStretch();
-           
-           
+      connect(m_comboBox, QOverload<int>::of(&ElaComboBox::activated), this,
+              [this](int index) {
+                audio_config_data.Dcoderformat =
+                    static_cast<ma_format>(index + 1);
+                auto audio_assist =
+                    ModuleManager::getInstance().getModule<AudioAssist>();
+                audio_assist->setAudioConfig(audio_config_data);
+              });
 
-		   connect(m_comboBox, QOverload<int>::of(&ElaComboBox::activated), this, [this](int index) {
-               audio_config_data.Dcoderformat = static_cast<ma_format>(index + 1);
-			   });
+      audio_config_layout->addSpacing(10);
+      audio_config_layout->addWidget(comboBoxArea);
+    }
+    {
+      QString propety_name = "DcoderSampleRate";
+      int propety_value = audio_config_data.DcoderSampleRate;
+      auto propety_value_line_edit = new ElaLineEdit(this);
+      propety_value_line_edit->setText(QString::number(propety_value));
+      propety_value_line_edit->setValidator(new QIntValidator());
 
+      ElaScrollPageArea *textbox_area = new ElaScrollPageArea(this);
+      QHBoxLayout *texbox_area_Layout = new QHBoxLayout(textbox_area);
+      ElaText *propety_name_text = new ElaText(propety_name, this);
+      propety_name_text->setTextPixelSize(15);
+      texbox_area_Layout->addWidget(propety_name_text);
+      texbox_area_Layout->addWidget(propety_value_line_edit);
+      texbox_area_Layout->addStretch();
 
-           audio_config_layout->addSpacing(10);
-           audio_config_layout->addWidget(comboBoxArea);
-       }
-	   {
-		   QString propety_name = "DcoderSampleRate";
-		   int propety_value = audio_config_data.DcoderSampleRate;
-		   auto propety_value_line_edit = new ElaLineEdit(this);
-		   propety_value_line_edit->setText(QString::number(propety_value));
-           propety_value_line_edit->setValidator(new QIntValidator());
+      connect(propety_value_line_edit, &ElaLineEdit::focusOut, this,
+              [this](QString text) {
+                audio_config_data.DcoderSampleRate = text.toInt();
+                auto audio_assist =
+                    ModuleManager::getInstance().getModule<AudioAssist>();
+                audio_assist->setAudioConfig(audio_config_data);
+              });
 
-		   ElaScrollPageArea* textbox_area = new ElaScrollPageArea(this);
-		   QHBoxLayout* texbox_area_Layout = new QHBoxLayout(textbox_area);
-		   ElaText* propety_name_text = new ElaText(propety_name, this);
-		   propety_name_text->setTextPixelSize(15);
-		   texbox_area_Layout->addWidget(propety_name_text);
-		   texbox_area_Layout->addWidget(propety_value_line_edit);
-		   texbox_area_Layout->addStretch();
+      audio_config_layout->addSpacing(10);
+      audio_config_layout->addWidget(textbox_area);
+    }
 
-		   connect(propety_value_line_edit, &ElaLineEdit::focusOut, this, [this](QString text) {
-               audio_config_data.DcoderSampleRate = text.toInt();
-			   });
+    {
+      QString propety_name = "AudioSampleRate";
+      int propety_value = audio_config_data.AudioSampleRate;
+      auto propety_value_line_edit = new ElaLineEdit(this);
+      propety_value_line_edit->setText(QString::number(propety_value));
+      propety_value_line_edit->setValidator(new QIntValidator());
 
+      ElaScrollPageArea *textbox_area = new ElaScrollPageArea(this);
+      QHBoxLayout *texbox_area_Layout = new QHBoxLayout(textbox_area);
+      ElaText *propety_name_text = new ElaText(propety_name, this);
+      propety_name_text->setTextPixelSize(15);
+      texbox_area_Layout->addWidget(propety_name_text);
+      texbox_area_Layout->addWidget(propety_value_line_edit);
+      texbox_area_Layout->addStretch();
 
-		   audio_config_layout->addSpacing(10);
-		   audio_config_layout->addWidget(textbox_area);
-	   }
+      connect(propety_value_line_edit, &ElaLineEdit::focusOut, this,
+              [this](QString text) {
+                audio_config_data.DcoderSampleRate = text.toInt();
+                auto audio_assist =
+                    ModuleManager::getInstance().getModule<AudioAssist>();
+                audio_assist->setAudioConfig(audio_config_data);
+              });
 
-	   {
-		   QString propety_name = "AudioSampleRate";
-		   int propety_value = audio_config_data.AudioSampleRate;
-		   auto propety_value_line_edit = new ElaLineEdit(this);
-		   propety_value_line_edit->setText(QString::number(propety_value));
-		   propety_value_line_edit->setValidator(new QIntValidator());
-
-		   ElaScrollPageArea* textbox_area = new ElaScrollPageArea(this);
-		   QHBoxLayout* texbox_area_Layout = new QHBoxLayout(textbox_area);
-		   ElaText* propety_name_text = new ElaText(propety_name, this);
-		   propety_name_text->setTextPixelSize(15);
-		   texbox_area_Layout->addWidget(propety_name_text);
-		   texbox_area_Layout->addWidget(propety_value_line_edit);
-		   texbox_area_Layout->addStretch();
-
-		   connect(propety_value_line_edit, &ElaLineEdit::focusOut, this, [this](QString text) {
-			   audio_config_data.DcoderSampleRate = text.toInt();
-			   });
-
-
-		   audio_config_layout->addSpacing(10);
-		   audio_config_layout->addWidget(textbox_area);
-	   }
+      audio_config_layout->addSpacing(10);
+      audio_config_layout->addWidget(textbox_area);
+    }
   }
 
   // 菜单
@@ -454,13 +434,11 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
   _homeMenu->addElaIconAction(ElaIconType::Copy, "复制");
   _homeMenu->addElaIconAction(ElaIconType::MagnifyingGlassPlus, "显示设置");
 
-
-
   QWidget *centralWidget = new QWidget(this);
   centralWidget->setWindowTitle("Home");
   QVBoxLayout *centerVLayout = new QVBoxLayout(centralWidget);
   centerVLayout->setSpacing(0);
-  
+
   centerVLayout->setContentsMargins(0, 0, 0, 0);
   centerVLayout->addWidget(backgroundCard);
   centerVLayout->addSpacing(20);
@@ -477,46 +455,37 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
   centerVLayout->addStretch();
   addCentralWidget(centralWidget);
 
+  // signal
 
-  
-  //signal 
+  connect(m_pivot, &ElaPivot::pivotClicked, this, [=](int index) {
+    enum class datatype : uint32_t {
 
-	  connect(m_pivot, &ElaPivot::pivotClicked, this, [=](int index) {
-		  
-          enum class datatype : uint32_t
-          {
-              
-              bilibili,
-              Sovits,
-              MiniAudio,
-          };
-          datatype t = static_cast<datatype>(index);
-          switch (t)
-          {
-          case datatype::bilibili:
-              
-			  
-              bili_config->show();
-              sovits_config->hide();
-              audio_config->hide();
-              break;
-          case datatype::Sovits:
-              
-			  
-              bili_config->hide();
-              sovits_config->show();
-              audio_config->hide();
-              break;
-          case datatype::MiniAudio:
-              bili_config->hide();
-              sovits_config->hide();
-              audio_config->show();
-			 
-              
-              break;
-          }
-		  });
+      bilibili,
+      Sovits,
+      MiniAudio,
+    };
+    datatype t = static_cast<datatype>(index);
+    switch (t) {
+    case datatype::bilibili:
 
+      bili_config->show();
+      sovits_config->hide();
+      audio_config->hide();
+      break;
+    case datatype::Sovits:
+
+      bili_config->hide();
+      sovits_config->show();
+      audio_config->hide();
+      break;
+    case datatype::MiniAudio:
+      bili_config->hide();
+      sovits_config->hide();
+      audio_config->show();
+
+      break;
+    }
+  });
 
   // 初始化提示
   ElaMessageBar::success(ElaMessageBarType::BottomRight, "Success",

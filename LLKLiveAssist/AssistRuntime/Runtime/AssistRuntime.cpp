@@ -42,8 +42,13 @@ void AssistRuntime::init() {
 
 }
 void AssistRuntime::shutdown() {
- ModuleManager::getInstance().shutdown();
   // Shutdown the assist core
+ ModuleManager::getInstance().shutdown();
+ //join main therad
+ if (m_core_thread.joinable())
+ {
+	 m_core_thread.join();
+ }
 }
 
 void AssistRuntime::startModule(PluginType plugin)
@@ -58,35 +63,40 @@ void AssistRuntime::stratAllModule()
 
 void AssistRuntime::stratAllModule(std::function<void(const std::error_code)> callback)
 {
+  if(m_core_thread.joinable())
+  {
+    m_core_thread.join();
+  }
+  
 	m_core_thread =  std::thread([callback]() {
-		std::error_code ec;
-		try {
-			ModuleManager::getInstance().startAllModule();
-		}
-		catch (std::exception const& e) {
-			ec = std::make_error_code(std::errc::executable_format_error);
-		}
-
-		callback(ec);
+		
+	
+		auto res = ModuleManager::getInstance().startAllModule();
+		callback(res);
 		});
 }
 
 void AssistRuntime::stopAllModule()
 {
+	
   ModuleManager::getInstance().stopAllModule();
 }
 
 void AssistRuntime::stopAllModule(std::function<void(const std::error_code)> callback)
 {
   
-  std::error_code ec;
-  try {
+  
+  if (m_core_thread.joinable())
+  {
+	  m_core_thread.join();
+  }
+
+  m_core_thread = std::thread([callback]() {
+
+
 	  ModuleManager::getInstance().stopAllModule();
-  }
-  catch (std::exception const& e) {
-	  ec = std::make_error_code(std::errc::executable_format_error);
-  }
-  callback(ec);
+	  callback(std::error_code());
+	  });
 }
 
 
