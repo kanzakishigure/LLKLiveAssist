@@ -6,7 +6,6 @@
 #include <map>
 #include <string>
 
-
 namespace NAssist {
 std::shared_ptr<HttpRequest>
 HttpRequest::CreateRequest(const std::string &url, const std::string &uri,
@@ -16,8 +15,7 @@ HttpRequest::CreateRequest(const std::string &url, const std::string &uri,
 
 HttpRequest::HttpRequest(const std::string &url, const std::string &uri,
                          const HttpRequestMethod request_method)
-    : m_Host(url), m_Uri(uri),
-      m_tcp_stream(m_io_ctx),
+    : m_Host(url), m_Uri(uri), m_tcp_stream(m_io_ctx),
       m_ssl_ctx(boost::asio::ssl::context::tlsv12_client),
       m_ssl_stream(m_io_ctx, m_ssl_ctx) {
 
@@ -47,11 +45,10 @@ HttpRequest::HttpRequest(const std::string &url, const std::string &uri,
 
     boost::asio::ip::tcp::resolver resolver(m_io_ctx);
     m_Host = resolve_host;
-    if (m_Host.find_first_of(':') != std::string::npos)
-    {
-        size_t index = m_Host.find_first_of(':');
-        port = m_Host.substr(index+1, m_Host.size() - index-1);
-        m_Host = m_Host.substr(0, index);
+    if (m_Host.find_first_of(':') != std::string::npos) {
+      size_t index = m_Host.find_first_of(':');
+      port = m_Host.substr(index + 1, m_Host.size() - index - 1);
+      m_Host = m_Host.substr(0, index);
     }
     // test ssl
     switch (request_type) {
@@ -88,7 +85,7 @@ HttpRequest::HttpRequest(const std::string &url, const std::string &uri,
     m_req.set(boost::beast::http::field::user_agent,
               BOOST_BEAST_VERSION_STRING);
     m_req.set(boost::beast::http::field::connection, "Keep-Alive");
-   
+
   } catch (std::exception const &e) {
     std::cerr << "Error: " << e.what() << std::endl;
   }
@@ -97,33 +94,28 @@ HttpRequest::HttpRequest(const std::string &url, const std::string &uri,
 HttpRequest::~HttpRequest() {
   try {
 
-      boost::beast::error_code ec;
-      switch (request_type)
-      {
-      case NAssist::HttpRequestType::http: {
-		  // Gracefully close the socket
-		 
-		  m_tcp_stream.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both,
-			  ec);
-		  // not_connected happens sometimes
-		  // so don't bother reporting it.
-		  //
-		  if (ec && ec != boost::beast::errc::not_connected)
-			  throw boost::beast::system_error{ ec };
+    boost::beast::error_code ec;
+    switch (request_type) {
+    case NAssist::HttpRequestType::http: {
+      // Gracefully close the socket
+
+      m_tcp_stream.socket().shutdown(
+          boost::asio::ip::tcp::socket::shutdown_both, ec);
+      // not_connected happens sometimes
+      // so don't bother reporting it.
+      //
+      if (ec && ec != boost::beast::errc::not_connected)
+        throw boost::beast::system_error{ec};
+    } break;
+    case NAssist::HttpRequestType::https: {
+      m_ssl_stream.shutdown(ec);
+      if (ec) {
+        throw boost::beast::system_error{ec};
       }
-          break;
-      case NAssist::HttpRequestType::https:
-      {
-          m_ssl_stream.shutdown(ec);
-          if (ec)
-          {
-              throw boost::beast::system_error{ ec };
-          }
-      }
-          break;
-      default:
-          break;
-      }
+    } break;
+    default:
+      break;
+    }
   } catch (std::exception const &e) {
     std::cerr << "Error: " << e.what() << std::endl;
   }
@@ -133,13 +125,7 @@ void HttpRequest::AddHeader(const std::string &key, const std::string &value) {
   m_req.insert(key, value);
 }
 
-
-
-
-void HttpRequest::ClearHeader()
-{
-    m_req.clear();
-}
+void HttpRequest::ClearHeader() { m_req.clear(); }
 
 void HttpRequest::SetContent(const std::string &data) {
   m_req.body() = data;
@@ -147,24 +133,16 @@ void HttpRequest::SetContent(const std::string &data) {
   m_req.prepare_payload();
 }
 
-void HttpRequest::SetTarget(const std::string& url)
-{
-    m_req.target(url);
-}
+void HttpRequest::SetTarget(const std::string &url) { m_req.target(url); }
 
 std::string HttpRequest::Receive() {
   // Send the HTTP request to the remote host
   std::string result;
   try {
 
-    
-
     switch (request_type) {
     case NAssist::HttpRequestType::http: {
       boost::beast::http::write(m_tcp_stream, m_req);
-
-      
-      
 
       // Receive the HTTP response
       boost::beast::http::read(m_tcp_stream, m_buffer, m_res);
@@ -175,12 +153,8 @@ std::string HttpRequest::Receive() {
     case NAssist::HttpRequestType::https: {
       boost::beast::http::write(m_ssl_stream, m_req);
 
-      
-      
-
       // Receive the HTTP response
       boost::beast::http::read(m_ssl_stream, m_buffer, m_res);
-      
 
       // Write the message to standard out
 
@@ -188,7 +162,7 @@ std::string HttpRequest::Receive() {
     }
 
     result = boost::beast::buffers_to_string(m_res.body().data());
-    
+
   } catch (std::exception const &e) {
     std::cerr << "Error: " << e.what() << std::endl;
   }

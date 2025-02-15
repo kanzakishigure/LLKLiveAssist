@@ -10,14 +10,13 @@
 #include <type_traits>
 #include <variant>
 
-
-
 namespace NAssist {
 
 class Serializeable {
 public:
-  virtual  std::variant<boost::json::value, std::error_code> 
-  serialize() { return std::error_code(); }
+  virtual std::variant<boost::json::value, std::error_code> serialize() {
+    return std::error_code();
+  }
 };
 
 template <typename T> class Parser {
@@ -41,14 +40,12 @@ public:
   }
 };
 
-
 class AppStartInfo;
 class GSoVITSModel;
 class ProtoPacket;
 class GSoVITSRequestBody;
 
 } // namespace NAssist
-
 
 namespace boost::json {
 NAssist::AppStartInfo
@@ -68,12 +65,9 @@ tag_invoke(const boost::json::value_to_tag<NAssist::ProtoPacket> &,
 }
 
 namespace boost::json {
-	NAssist::GSoVITSRequestBody
-		tag_invoke(const boost::json::value_to_tag<NAssist::GSoVITSRequestBody>&,
-			boost::json::value const& jv);
-    void
-        tag_invoke(const value_from_tag&, value& jv, NAssist::GSoVITSRequestBody const& request);
-}
-
-
-
+NAssist::GSoVITSRequestBody
+tag_invoke(const boost::json::value_to_tag<NAssist::GSoVITSRequestBody> &,
+           boost::json::value const &jv);
+void tag_invoke(const value_from_tag &, value &jv,
+                NAssist::GSoVITSRequestBody const &request);
+} // namespace boost::json

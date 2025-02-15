@@ -3,7 +3,6 @@
 #include "Net/HttpRequest.h"
 #include "Net/TCPClient.h"
 
-
 #include <boost/process/v1/detail/child_decl.hpp>
 #include <boost/process/v1/io.hpp>
 #include <boost/process/v1/start_dir.hpp>
@@ -46,8 +45,6 @@ void GSoVITSAssist::init() {
       m_GSoVITSModel = get<0>(result);
     }
   }
-
-  
 }
 
 void GSoVITSAssist::pushAudioStream(std::vector<uint8_t> bytes_stream) {
@@ -63,17 +60,20 @@ std::vector<uint8_t> GSoVITSAssist::popAudioSteam() {
   }
   return result;
 }
-std::error_code  GSoVITSAssist::start() {
+std::error_code GSoVITSAssist::start() {
   // 启动gpt-sovits实例
-  {    
-    std::string gps_sovist_args = std::format("{0}runtime/python.exe {0}api_v2.py -a {1} -p {2} -c {0}GPT_SoVITS/configs/tts_infer.yaml",GPT_SOVITS_ROOT,request_host,std::to_string(request_port));
-    m_gpt_sovist_process = std::make_unique<boost::process::child>(gps_sovist_args,boost::process::start_dir(GPT_SOVITS_ROOT));
-    
+  {
+    std::string gps_sovist_args = std::format(
+        "{0}runtime/python.exe {0}api_v2.py -a {1} -p {2} -c "
+        "{0}GPT_SoVITS/configs/tts_infer.yaml",
+        GPT_SOVITS_ROOT, request_host, std::to_string(request_port));
+    m_gpt_sovist_process = std::make_unique<boost::process::child>(
+        gps_sovist_args, boost::process::start_dir(GPT_SOVITS_ROOT));
+
     // 尝试使用tcp连接服务
     TCPClient tcp(request_host, request_port);
     while (true) {
-      if(tcp.try_connect())
-      {
+      if (tcp.try_connect()) {
         break;
       }
     }
@@ -83,14 +83,14 @@ std::error_code  GSoVITSAssist::start() {
   {
     std::shared_ptr<HttpRequest> request = HttpRequest::CreateRequest(
         request_url, set_gpt_weights_endpoint, HttpRequestMethod::get);
-    
+
     std::cout << request->Receive() << std::endl;
   }
 
   {
     std::shared_ptr<HttpRequest> request = HttpRequest::CreateRequest(
         request_url, set_sovits_weights_endpoint, HttpRequestMethod::get);
-  
+
     std::cout << request->Receive() << std::endl;
   }
   // generate request body use data from model
@@ -101,14 +101,14 @@ std::error_code  GSoVITSAssist::start() {
 
   // create a thread use for send request;
   {
-	  std::lock_guard<std::mutex> lg(m_msg_mutex);
-	  m_stoped = false;
+    std::lock_guard<std::mutex> lg(m_msg_mutex);
+    m_stoped = false;
   }
-  
+
   m_thread = std::thread([this]() {
     while (!m_stoped) {
       std::unique_lock<std::mutex> lock(m_msg_mutex); // 获取锁
-      m_msg_condition.wait(lock ); // 等待条件
+      m_msg_condition.wait(lock);                     // 等待条件
       while (!m_msg_queue.empty()) {
         std::string msg = m_msg_queue.front();
         m_msg_queue.pop();
@@ -123,23 +123,19 @@ std::error_code  GSoVITSAssist::start() {
 }
 
 void GSoVITSAssist::shutdown() {
-	
-    {
-		std::lock_guard<std::mutex> lg(m_msg_mutex);
-		m_stoped = true;
-        m_msg_condition.notify_all();
-        
-	}
-    
-    if (m_thread.joinable())
-    {
-        m_thread.join();
-  }
-  if (m_gpt_sovist_process)
+
   {
-      m_gpt_sovist_process->terminate();
+    std::lock_guard<std::mutex> lg(m_msg_mutex);
+    m_stoped = true;
+    m_msg_condition.notify_all();
   }
 
+  if (m_thread.joinable()) {
+    m_thread.join();
+  }
+  if (m_gpt_sovist_process) {
+    m_gpt_sovist_process->terminate();
+  }
 }
 
 void GSoVITSAssist::drawUI() {}

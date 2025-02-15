@@ -1,8 +1,9 @@
 #pragma once
 
+#include "AudioAssist.h"
 #include "BasePage.h"
 #include "Data/GSoVITSModel.h"
-#include "AudioAssist.h"
+
 class ElaMenu;
 class ElaToggleSwitch;
 class ElaPivot;
@@ -26,10 +27,10 @@ protected:
 
 private:
   ElaMenu *_homeMenu{nullptr};
-  ElaPivot* m_pivot{ nullptr };
-  ElaComboBox* m_comboBox{ nullptr };
+  ElaPivot *m_pivot{nullptr};
+  ElaComboBox *m_comboBox{nullptr};
   GSoVITSModel sovits_config_data;
-  
+
   AudioConfig audio_config_data;
 };
 } // namespace NAssist

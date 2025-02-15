@@ -4,12 +4,10 @@
 
 #include <QApplication>
 #include <QScreen>
-#include <filesystem>
-#include <qchar.h>
 
-#include <iostream>
 #include "ElaApplication.h"
 #include "GUI/AssistRuntimeWindow.h"
+
 #ifdef Q_OS_WIN
 #include <Windows.h>
 #endif
@@ -31,7 +29,7 @@ int Main(int argc, char **argv) {
   qputenv("QT_SCALE_FACTOR", "1.5");
 #endif
 #endif
-  
+
   QApplication app(argc, argv);
   eApp->init();
   AssistRuntimeWindow w;

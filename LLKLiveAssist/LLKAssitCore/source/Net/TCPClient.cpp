@@ -17,4 +17,4 @@ bool TCPClient::try_connect() {
     return false;
   }
 }
-}
+} // namespace NAssist

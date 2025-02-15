@@ -16,14 +16,12 @@ ModuleManager::addPlugin(const std::shared_ptr<PluginBase> plugin) {
   return true;
 }
 std::error_code ModuleManager::startAllModule() {
-    
-    for (const auto &plugin : m_plugins) {
-    auto res = plugin->start();
-    if (res.value()!=0)
-    {
-        return res;
-    }
 
+  for (const auto &plugin : m_plugins) {
+    auto res = plugin->start();
+    if (res.value() != 0) {
+      return res;
+    }
   }
   return std::error_code();
 }
@@ -36,11 +34,11 @@ void ModuleManager::stopAllModule() {
 bool ModuleManager::startModule(PluginType type) {
   for (const auto &plugin : m_plugins) {
     if (plugin->getStaticType() == type) {
-     auto res =  plugin->start();
-     if(!res)
-         return true;
-     else
-         std::cout << res.message() << std::endl;
+      auto res = plugin->start();
+      if (!res)
+        return true;
+      else
+        std::cout << res.message() << std::endl;
     }
   }
   return false;

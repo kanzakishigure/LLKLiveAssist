@@ -1,9 +1,10 @@
 #pragma once
 #include <boost/endian/buffers.hpp>
 
+#include "Data/JsonParser.h"
 #include <cstdint>
 #include <vector>
-#include "Data/JsonParser.h"
+
 namespace NAssist {
 enum class ProtoOperation : uint32_t {
   /// <summary>
@@ -90,11 +91,16 @@ static std::vector<uint8_t> ProtoPacket2bytes(ProtoPacket packet) {
         boost::endian::endian_reverse(packet.header.sequence_id);
   }
   std::vector<uint8_t> data(16);
-  *(reinterpret_cast<uint32_t *>(&data[0])) = static_cast<uint32_t>(packet.header.packet_length);
-  *(reinterpret_cast<uint16_t *>(&data[4])) = static_cast<uint16_t>(packet.header.header_length);
-  *(reinterpret_cast<uint16_t *>(&data[6])) = static_cast<uint16_t>(packet.header.version);
-  *(reinterpret_cast<uint32_t *>(&data[8])) = static_cast<uint32_t>(packet.header.operation);
-  *(reinterpret_cast<uint32_t *>(&data[12])) = static_cast<uint32_t>(packet.header.sequence_id);
+  *(reinterpret_cast<uint32_t *>(&data[0])) =
+      static_cast<uint32_t>(packet.header.packet_length);
+  *(reinterpret_cast<uint16_t *>(&data[4])) =
+      static_cast<uint16_t>(packet.header.header_length);
+  *(reinterpret_cast<uint16_t *>(&data[6])) =
+      static_cast<uint16_t>(packet.header.version);
+  *(reinterpret_cast<uint32_t *>(&data[8])) =
+      static_cast<uint32_t>(packet.header.operation);
+  *(reinterpret_cast<uint32_t *>(&data[12])) =
+      static_cast<uint32_t>(packet.header.sequence_id);
 
   data.insert(data.end(), packet.body.begin(), packet.body.end());
 
@@ -102,15 +108,16 @@ static std::vector<uint8_t> ProtoPacket2bytes(ProtoPacket packet) {
 }
 
 static ProtoPacket bytes2ProtoPacket(std::vector<uint8_t> bytes) {
-  
-  ProtoPacket packet;
-  
-  packet.header.packet_length = *(reinterpret_cast<uint32_t *>(&bytes[0])) ;
-  packet.header.header_length = *(reinterpret_cast<uint16_t *>(&bytes[4]));
-  packet.header.version = static_cast<ProtoVersion>(*(reinterpret_cast<uint16_t *>(&bytes[6])));
-  packet.header.operation = static_cast<ProtoOperation>(*(reinterpret_cast<uint32_t *>(&bytes[8])));
-  packet.header.sequence_id = *(reinterpret_cast<uint32_t *>(&bytes[12]));
 
+  ProtoPacket packet;
+
+  packet.header.packet_length = *(reinterpret_cast<uint32_t *>(&bytes[0]));
+  packet.header.header_length = *(reinterpret_cast<uint16_t *>(&bytes[4]));
+  packet.header.version =
+      static_cast<ProtoVersion>(*(reinterpret_cast<uint16_t *>(&bytes[6])));
+  packet.header.operation =
+      static_cast<ProtoOperation>(*(reinterpret_cast<uint32_t *>(&bytes[8])));
+  packet.header.sequence_id = *(reinterpret_cast<uint32_t *>(&bytes[12]));
 
   if (is_little_endian2()) {
     packet.header.packet_length =
@@ -124,8 +131,7 @@ static ProtoPacket bytes2ProtoPacket(std::vector<uint8_t> bytes) {
     packet.header.sequence_id =
         boost::endian::endian_reverse(packet.header.sequence_id);
   }
-  packet.body = std::vector<uint8_t>(bytes.begin()+16,bytes.end());
-  
+  packet.body = std::vector<uint8_t>(bytes.begin() + 16, bytes.end());
 
   return packet;
 }

@@ -22,7 +22,6 @@ private:
   // ela widget
   ElaContentDialog *_closeDialog{nullptr};
   HomePage *m_homePage{nullptr};
-  
 
   QWidget *m_CentralWidget;
 };

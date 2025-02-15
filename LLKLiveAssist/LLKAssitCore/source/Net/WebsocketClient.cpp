@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-
 namespace NAssist {
 
 void fail(boost::beast::error_code ec, char const *what) {
@@ -21,8 +20,7 @@ WebsocketClient::Create(const std::string &host) {
 }
 
 WebsocketClient::WebsocketClient(const std::string &host)
-    : m_Host(host),
-      m_ssl_ctx(boost::asio::ssl::context::tlsv12_client),
+    : m_Host(host), m_ssl_ctx(boost::asio::ssl::context::tlsv12_client),
       m_sync_stream(m_io_ctx, m_ssl_ctx),
       m_resolver(boost::asio::make_strand(m_io_ctx)), m_state(0) {
   try {
@@ -132,8 +130,7 @@ void WebsocketClient::Receive() {
 }
 
 AsyncWebsocketClient::AsyncWebsocketClient(const std::string &host)
-    : m_Host(host),
-      m_timer(m_io_ctx, boost::asio::chrono::seconds(0)),
+    : m_Host(host), m_timer(m_io_ctx, boost::asio::chrono::seconds(0)),
       m_ssl_ctx(boost::asio::ssl::context::tlsv12_client),
       m_async_stream(boost::asio::make_strand(m_io_ctx), m_ssl_ctx),
       m_resolver(boost::asio::make_strand(m_io_ctx)), m_state(0) {
@@ -205,8 +202,6 @@ void AsyncWebsocketClient::AsyncSend(
     const std::vector<uint8_t> &data,
     std::function<void(boost::beast::error_code, std::size_t)> func) {
   m_async_stream.async_write(boost::asio::buffer(data), func);
-
-
 }
 
 void AsyncWebsocketClient::AsyncReceive(
@@ -214,51 +209,37 @@ void AsyncWebsocketClient::AsyncReceive(
   m_async_stream.async_read(m_buffer, func);
 }
 
-
-
-void AsyncWebsocketClient::Send(const std::vector<uint8_t>& data)
-{
-	size_t size = 0;
-	try {
-		size = m_async_stream.write(boost::asio::buffer(data));
-	}
-	catch (const std::exception& e) {
-		std::cerr << "Error: " << e.what() << std::endl;
-	}
+void AsyncWebsocketClient::Send(const std::vector<uint8_t> &data) {
+  size_t size = 0;
+  try {
+    size = m_async_stream.write(boost::asio::buffer(data));
+  } catch (const std::exception &e) {
+    std::cerr << "Error: " << e.what() << std::endl;
+  }
 }
 
-std::vector<uint8_t> AsyncWebsocketClient::Receive()
-{
-	try {
-        m_buffer.clear();
-        m_async_stream.read(m_buffer);
-        std::string data = boost::beast::buffers_to_string(m_buffer.data());
-        return std::vector<uint8_t>(data.begin(),data.end());
-	}
-	catch (const std::exception& e) {
-		std::cerr << "Error: " << e.what() << std::endl;
-    
-	}
+std::vector<uint8_t> AsyncWebsocketClient::Receive() {
+  try {
+    m_buffer.clear();
+    m_async_stream.read(m_buffer);
+    std::string data = boost::beast::buffers_to_string(m_buffer.data());
+    return std::vector<uint8_t>(data.begin(), data.end());
+  } catch (const std::exception &e) {
+    std::cerr << "Error: " << e.what() << std::endl;
+  }
   return {};
 }
 
-void AsyncWebsocketClient::StartAsyncTask() 
-{
-    m_io_ctx.run();
-    
+void AsyncWebsocketClient::StartAsyncTask() { m_io_ctx.run(); }
+
+void AsyncWebsocketClient::CommitAsyncTask() {
+  m_io_ctx.run();
+  m_io_ctx.poll();
 }
 
-
-
-void AsyncWebsocketClient::CommitAsyncTask()
-{
-    m_io_ctx.run();
-    m_io_ctx.poll();
-}
-
-void AsyncWebsocketClient::AddFunc(FunctionType type, std::function<void()> func)
-{
-    m_function_map[type] = func;
+void AsyncWebsocketClient::AddFunc(FunctionType type,
+                                   std::function<void()> func) {
+  m_function_map[type] = func;
 }
 
 std::shared_ptr<AsyncWebsocketClient>
@@ -351,7 +332,5 @@ void AsyncWebsocketClient::on_handshake(boost::beast::error_code ec) {
   }
   std::cout << " success handshake" << std::endl;
 }
-
-
 
 } // namespace NAssist

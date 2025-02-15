@@ -2,149 +2,129 @@
 #include "GSoVITSAssist.h"
 #include "ModuleManager.h"
 
-#include <iostream>
 #include <fstream>
-
-
+#include <iostream>
 
 namespace NAssist {
 
+void AudioAssist::init() {
 
-	void AudioAssist::init() {
+  // init the audio engine
+  m_Engine = AudioEngine::Create();
 
-		//init the audio engine
-		m_Engine = AudioEngine::Create();
+  m_PlaybackTask = std::make_shared<PeriodicTask>(
+      [this]() {
+        auto gsovits_assist =
+            ModuleManager::getInstance().getModule<GSoVITSAssist>();
+        std::vector<uint8_t> audio_stream = gsovits_assist->popAudioSteam();
+        if (audio_stream.size() > 0) {
+          m_PlaybackQueue.emplace_back() =
+              Sound::CreateFromBytes(audio_stream, m_Engine);
+          m_PlaybackQueue.back()->Play();
+        }
+      },
+      1.0);
 
-		m_PlaybackTask = std::make_shared<PeriodicTask>([this]() {
+  std::cout << "AudioAssist Init \n" << std::endl;
+}
 
-			auto gsovits_assist = ModuleManager::getInstance().getModule<GSoVITSAssist>();
-			std::vector<uint8_t> audio_stream = gsovits_assist->popAudioSteam();
-			if (audio_stream.size() > 0)
-			{
-				m_PlaybackQueue.emplace_back() = Sound::CreateFromBytes(audio_stream, m_Engine);
-				m_PlaybackQueue.back()->Play();
-			}
+void AudioAssist::shutdown() {
+  std::cout << "AudioAssist Shutdown \n" << std::endl;
+  m_PlaybackTask->Stop();
+  if (m_PlaybackThread.joinable()) {
+    m_PlaybackThread.join();
+  }
+}
 
-			}, 1.0);
+void AudioAssist::drawUI() {}
 
-		std::cout << "AudioAssist Init \n" << std::endl;
+std::error_code AudioAssist::start() {
+  std::cout << "AudioAssist Start \n" << std::endl;
+  m_PlaybackThread = std::thread([this] { m_PlaybackTask->Start(); });
 
+  return make_error_code(audio_engine_errc::success);
+}
 
+Sound::Sound(std::vector<uint8_t> bytes, std::shared_ptr<AudioEngine> engine)
+    : m_audio_buffer(nullptr) {
+  auto audio_assist = ModuleManager::getInstance().getModule<AudioAssist>();
+  m_buffer = std::vector<uint8_t>(bytes.begin(), bytes.end());
+  // decoder the memory  to  resolve audiostream
+  ma_uint64 size_in_frames = 0;
+  void *frames_out = nullptr;
+  ma_channel channels = ma_engine_get_channels(engine->GetPMaEngine());
+  ma_format format = audio_assist->getAudioConfig().Dcoderformat;
+  ma_decoder_config decoder_config = ma_decoder_config_init(
+      format, channels, audio_assist->getAudioConfig().DcoderSampleRate);
+  ma_result decode_memory_res =
+      ma_decode_memory(m_buffer.data(), m_buffer.size(), &decoder_config,
+                       &size_in_frames, &frames_out);
 
-	}
+  if (decode_memory_res != MA_SUCCESS) {
+    std::string error =
+        std::format("[{}]-[{}]:fail to decode memory", "Sound", "ERROR");
+  }
 
-	void AudioAssist::shutdown() 
-	{
-		std::cout << "AudioAssist Shutdown \n" << std::endl;
-		m_PlaybackTask->Stop();
-		if (m_PlaybackThread.joinable())
-		{
-			m_PlaybackThread.join();
-		}
-		
-	}
+  // audio config
+  ma_audio_buffer_config audio_buffer_config = ma_audio_buffer_config_init(
+      format, channels, size_in_frames, m_buffer.data(), nullptr);
+  audio_buffer_config.sampleRate =
+      audio_assist->getAudioConfig().AudioSampleRate;
 
-	void AudioAssist::drawUI() {}
+  // allocate audio buffer and copy the data
+  ma_result audio_buffer_alloc_res =
+      ma_audio_buffer_alloc_and_init(&audio_buffer_config, &m_audio_buffer);
+  if (audio_buffer_alloc_res != MA_SUCCESS) {
+    ma_audio_buffer_uninit_and_free(m_audio_buffer);
+    std::string error = std::format(
+        "[{}]-[{}]:fail to create a ma_audio_buffer", "Sound", "ERROR");
+  }
+  // sound->engine_sound is a ma_sound
+  ma_result sound_init_res = ma_sound_init_from_data_source(
+      engine->GetPMaEngine(), m_audio_buffer,
+      MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_DECODE |
+          MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_STREAM,
+      NULL, &m_sound);
+  // sound_init_res is MA_SUCCESS
+  if (sound_init_res != MA_SUCCESS) {
+    std::string error =
+        std::format("[{}]-[{}]:fail to create a ma_sound", "Sound", "ERROR");
+  }
+}
+Sound::~Sound() { ma_audio_buffer_uninit_and_free(m_audio_buffer); }
 
-	std::error_code  AudioAssist::start()
-	{
-		std::cout << "AudioAssist Start \n" << std::endl;
-		m_PlaybackThread = std::thread([this] {m_PlaybackTask->Start();});
+std::shared_ptr<Sound>
+Sound::CreateFromBytes(std::vector<uint8_t> bytes,
+                       std::shared_ptr<AudioEngine> engine) {
+  return std::make_shared<Sound>(bytes, engine);
+}
 
-		return make_error_code(audio_engine_errc::success);
+void Sound::Play() { ma_sound_start(&m_sound); }
 
-	}
+std::shared_ptr<AudioEngine> AudioEngine::Create() {
+  return std::make_shared<AudioEngine>();
+}
 
+AudioEngine::AudioEngine() {
+  init();
+  std::cout << "AudioEngine init \n" << std::endl;
+}
 
+AudioEngine::~AudioEngine() {
+  uninit();
+  std::cout << "AudioEngine uninit \n" << std::endl;
+}
 
-	Sound::Sound(std::vector<uint8_t> bytes, std::shared_ptr<AudioEngine> engine) : m_audio_buffer(nullptr) 
-	{
-		auto audio_assist = ModuleManager::getInstance().getModule<AudioAssist>();
-		m_buffer = std::vector<uint8_t>(bytes.begin(), bytes.end());
-		// decoder the memory  to  resolve audiostream
-		ma_uint64 size_in_frames = 0;
-		void* frames_out = nullptr;
-		ma_channel channels = ma_engine_get_channels(engine->GetPMaEngine());
-		ma_format format = audio_assist->getAudioConfig().Dcoderformat;
-		ma_decoder_config decoder_config = ma_decoder_config_init(format, channels, audio_assist->getAudioConfig().DcoderSampleRate);
-		ma_result decode_memory_res = ma_decode_memory(m_buffer.data(), m_buffer.size(),
-				&decoder_config, &size_in_frames, &frames_out);
-		
-		if (decode_memory_res != MA_SUCCESS)
-		{
-			std::string error = std::format("[{}]-[{}]:fail to decode memory", "Sound", "ERROR");
-		}
+void AudioEngine::init() {
+  auto result = ma_engine_init(NULL, &m_engine);
 
-		// audio config
-		ma_audio_buffer_config audio_buffer_config = ma_audio_buffer_config_init(
-			format, channels, size_in_frames, m_buffer.data(), nullptr);
-		audio_buffer_config.sampleRate = audio_assist->getAudioConfig().AudioSampleRate;
+  if (result != MA_SUCCESS) {
+    std::string error = std::format("[{}]-[{}]:fail to init the audio engine",
+                                    "AUDIO ASSIST", "ERROR");
+    ma_engine_uninit(&m_engine);
+  }
+}
 
-		// allocate audio buffer and copy the data
-		ma_result audio_buffer_alloc_res = ma_audio_buffer_alloc_and_init(&audio_buffer_config, &m_audio_buffer);
-		if (audio_buffer_alloc_res != MA_SUCCESS) {
-			ma_audio_buffer_uninit_and_free(m_audio_buffer);
-			std::string error = std::format("[{}]-[{}]:fail to create a ma_audio_buffer", "Sound", "ERROR");
-		}
-		// sound->engine_sound is a ma_sound
-		ma_result sound_init_res = ma_sound_init_from_data_source(engine->GetPMaEngine(),
-			m_audio_buffer,
-			MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_DECODE | MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_STREAM,
-			NULL,
-			&m_sound);
-		// sound_init_res is MA_SUCCESS
-		if (sound_init_res != MA_SUCCESS)
-		{
-			std::string error = std::format("[{}]-[{}]:fail to create a ma_sound", "Sound", "ERROR");
-		}
-
-	}
-	Sound::~Sound()
-	{
-		ma_audio_buffer_uninit_and_free(m_audio_buffer);
-	}
-
-	std::shared_ptr<Sound> Sound::CreateFromBytes(std::vector<uint8_t> bytes, std::shared_ptr<AudioEngine> engine)
-	{
-		return std::make_shared<Sound>(bytes, engine);
-	}
-
-	void Sound::Play()
-	{
-		ma_sound_start(&m_sound);
-	}
-
-	std::shared_ptr<AudioEngine> AudioEngine::Create()
-	{
-		return std::make_shared<AudioEngine>();
-	}
-
-	AudioEngine::AudioEngine()
-	{
-		init();
-		std::cout << "AudioEngine init \n" << std::endl;
-	}
-
-	AudioEngine::~AudioEngine()
-	{
-		uninit();
-		std::cout << "AudioEngine uninit \n" << std::endl;
-	}
-
-	void AudioEngine::init()
-	{
-		auto result = ma_engine_init(NULL, &m_engine);
-
-		if (result != MA_SUCCESS)
-		{
-			std::string error = std::format("[{}]-[{}]:fail to init the audio engine", "AUDIO ASSIST", "ERROR");
-			ma_engine_uninit(&m_engine);
-		}
-	}
-
-	void AudioEngine::uninit()
-	{
-		ma_engine_uninit(&m_engine);
-	}
+void AudioEngine::uninit() { ma_engine_uninit(&m_engine); }
 
 } // namespace NAssist

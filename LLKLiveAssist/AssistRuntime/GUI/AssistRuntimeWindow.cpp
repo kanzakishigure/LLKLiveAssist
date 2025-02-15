@@ -25,8 +25,9 @@
 #include "ElaToolBar.h"
 #include "ElaToolButton.h"
 
-#include "Page/LogWidget.h"
 #include "Page/HomePage.h"
+#include "Page/LogWidget.h"
+
 
 namespace NAssist {
 
@@ -101,7 +102,6 @@ void AssistRuntimeWindow::initContent() {
 
   m_homePage = new HomePage(this);
   addPageNode("HOME", m_homePage, ElaIconType::House);
-  
 }
 
 } // namespace NAssist

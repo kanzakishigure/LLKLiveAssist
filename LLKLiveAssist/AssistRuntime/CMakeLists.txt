@@ -36,7 +36,7 @@ if(USE_RCC)
   ${LLKLiveAssist_ROOT_DIR}/Vendor/ElaWidgetTools/ElaWidgetTools/include/ElaWidgetTools.qrc)
   add_executable(${TARGET_NAME} ${RCC_PROJECT_SOURCES} )
 else()
-  add_executable(${TARGET_NAME} ${HEADER_FILES} ${SOURCE_FILES})
+  add_executable(${TARGET_NAME} ${HEADER_FILES} ${SOURCE_FILES} Resource/LLKLiveAssist.rc)
 endif()
 
 
@@ -135,4 +135,12 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 endif()
 
 
+install(TARGETS ${TARGET_NAME} LLKAssitCore
+    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/
+    RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/
+)
 install(FILES ${LLKLiveAssist_ROOT_DIR}/Config/Model/Model.json DESTINATION ${CMAKE_INSTALL_PREFIX}/Config/Model)
+
+install(IMPORTED_RUNTIME_ARTIFACTS ${TARGET_NAME} 
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+)

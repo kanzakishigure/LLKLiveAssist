@@ -16,8 +16,6 @@ public:
   virtual void drawUI() = 0;
 
   virtual PluginType getType() { return PluginType::None; }
-  static PluginType getStaticType() { return PluginType::None;}
-  
-
+  static PluginType getStaticType() { return PluginType::None; }
 };
 } // namespace NAssist

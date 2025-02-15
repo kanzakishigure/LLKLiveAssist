@@ -9,7 +9,6 @@
 #include <QVBoxLayout>
 #include <system_error>
 
-
 #include "Def.h"
 #include "ElaAcrylicUrlCard.h"
 #include "ElaCheckBox.h"
@@ -34,7 +33,6 @@
 #include "ElaToggleSwitch.h"
 #include "ElaToolTip.h"
 
-
 #include <ModuleManager.h>
 
 #include "Runtime/AssistRuntime.h"
@@ -50,12 +48,10 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
   // 标题卡片区域
   ElaText *desText = new ElaText("LLK Live Assist", this);
   desText->setTextPixelSize(38);
-  
+
   ElaText *titleText =
       new ElaText("欢迎使用露露卡直播小助手  ✿✿ヽ(°▽°)ノ✿", this);
   titleText->setTextPixelSize(24);
-
-  
 
   QVBoxLayout *titleLayout = new QVBoxLayout();
   titleLayout->setContentsMargins(30, 60, 0, 0);
@@ -107,7 +103,8 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
           sovits_assist->setGSoVITSModel(sovits_config_data);
           // code in another thread
           AssistRuntime::getInstance()->stratAllModule(
-              [start_toggleSwitch,start_toggleSwitchText](const std::error_code ec) {
+              [start_toggleSwitch,
+               start_toggleSwitchText](const std::error_code ec) {
                 QMetaObject::invokeMethod(start_toggleSwitch, "setDisabled",
                                           Qt::QueuedConnection,
                                           Q_ARG(bool, false));
