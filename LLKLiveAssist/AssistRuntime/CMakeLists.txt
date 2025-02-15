@@ -22,6 +22,9 @@ endif()
 find_package(Qt5 REQUIRED COMPONENTS Core Widgets REQUIRED)
 
 
+
+
+
 #打包资源素材
 if(USE_RCC)
   set(RCC_PROJECT_SOURCES
@@ -35,7 +38,6 @@ if(USE_RCC)
 else()
   add_executable(${TARGET_NAME} ${HEADER_FILES} ${SOURCE_FILES})
 endif()
-
 
 
 set_target_properties(${TARGET_NAME} PROPERTIES CXX_STANDARD 17 OUTPUT_NAME "AssistRuntime")
@@ -133,3 +135,4 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 endif()
 
 
+install(FILES ${LLKLiveAssist_ROOT_DIR}/Config/Model/Model.json DESTINATION ${CMAKE_INSTALL_PREFIX}/Config/Model)

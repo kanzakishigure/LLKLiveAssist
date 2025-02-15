@@ -40,6 +40,22 @@ function(copy_dll target_name source)
   
 endfunction()
 
+function(copy_config target_name source)
+  if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    add_custom_command(TARGET ${target_name} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${source}
+    ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/)
+    message("COPY DLL " ${source} " TO "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/)
+  elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    add_custom_command(TARGET ${target_name} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${source}
+    ${CMAKE_CURRENT_BINARY_DIR})
+    message("COPY config files " ${source} " TO " ${CMAKE_CURRENT_BINARY_DIR})
+  endif()
+  
+endfunction()
 
 add_subdirectory(Vendor/ElaWidgetTools)
 add_subdirectory(LLKLiveAssist)
