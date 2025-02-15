@@ -2,7 +2,7 @@
 
 <img src="https://kanzakishigure.github.io/picx-images-hosting/LLKLiveAssist/download.9kgap50cti.webp" alt="LOGO" width="450" height="300" />
 
-# LLKAssist
+# LLKLiveAssist
 
 <br>
 <div>
@@ -15,7 +15,7 @@
 <br>
 
 
-LLKAssist -LULUCA小助手
+LLKLiveAssist -LULUCA直播小助手
 
 
 一款基于[GPT-SoVITS](https://github.com/RVC-Boss/GPT-SoVITS)项目的弹幕姬
