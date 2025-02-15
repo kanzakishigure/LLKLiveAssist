@@ -43,7 +43,7 @@ gpt-sovits整合包下载完成后请将对应文件解压到 目录 ***/GSoVITS
 ### 从源码构建
 #### 获取源码
 ```git
-git clone recursive https://github.com/Liniyous/ElaWidgetTools.git
+git clone --recursive https://github.com/Liniyous/ElaWidgetTools.git
 ```
 ####  获取项目其他依赖
 
@@ -56,9 +56,7 @@ LLK Live Assist项目存在第三方依赖
 + qt5.15
   安装qt5.15 https://doc.qt.io/qt-5/gettingstarted.html
 
-```
-./setup.bat
-```
+
 ####  项目构建
 项目使用cmake进行构建，支持msvc,Mingw编译器。
 在项目根目录输入cmake
