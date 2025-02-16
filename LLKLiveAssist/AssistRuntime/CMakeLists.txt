@@ -34,9 +34,9 @@ if(USE_RCC)
   qt5_add_big_resources(RCC_PROJECT_SOURCES 
   ${TARGET_NAME}.qrc
   ${LLKLiveAssist_ROOT_DIR}/Vendor/ElaWidgetTools/ElaWidgetTools/include/ElaWidgetTools.qrc)
-  add_executable(${TARGET_NAME} ${RCC_PROJECT_SOURCES} )
+  add_executable(${TARGET_NAME} ${RCC_PROJECT_SOURCES} Resource/LLKLiveAssist.rc)
 else()
-  add_executable(${TARGET_NAME} ${HEADER_FILES} ${SOURCE_FILES} Resource/LLKLiveAssist.rc)
+  add_executable(${TARGET_NAME} ${HEADER_FILES} ${SOURCE_FILES}  Resource/LLKLiveAssist.rc)
 endif()
 
 
