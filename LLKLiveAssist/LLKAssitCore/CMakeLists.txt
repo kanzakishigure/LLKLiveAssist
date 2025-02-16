@@ -20,11 +20,19 @@ target_compile_options(${TARGET_NAME} PUBLIC "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:
 
 # 添加项目预定义宏文件
 
-target_compile_definitions(${TARGET_NAME} PRIVATE GPT_SOVITS_ROOT="${LLKLiveAssist_ROOT_DIR}/GSoVITSCore/GPT-SoVITS-v2/")
-target_compile_definitions(${TARGET_NAME} PRIVATE MODEL_CONFIG_PATH="${LLKLiveAssist_ROOT_DIR}/Config/Model/model.json")
 
 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
+  target_compile_definitions(${TARGET_NAME} PRIVATE GPT_SOVITS_ROOT="${LLKLiveAssist_ROOT_DIR}/GSoVITSCore/GPT-SoVITS-v2/")
+  target_compile_definitions(${TARGET_NAME} PRIVATE MODEL_CONFIG_PATH="${LLKLiveAssist_ROOT_DIR}/Config/Model/model.json")
+  target_compile_definitions(${TARGET_NAME} PRIVATE LLKDebug)
+elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+
+  target_compile_definitions(${TARGET_NAME} PRIVATE GPT_SOVITS_ROOT="GSoVITSCore/GPT-SoVITS-v2/")
+  target_compile_definitions(${TARGET_NAME} PRIVATE MODEL_CONFIG_PATH="Config/Model/model.json")
+  target_compile_definitions(${TARGET_NAME} PRIVATE LLKRelease)
+endif()
 
 # 查找 Boost 库
 

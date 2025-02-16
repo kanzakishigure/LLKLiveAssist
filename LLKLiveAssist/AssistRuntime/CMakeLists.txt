@@ -135,12 +135,95 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 endif()
 
 
-install(TARGETS ${TARGET_NAME} LLKAssitCore
+install(TARGETS ${TARGET_NAME}
     LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/
     RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/
 )
-install(FILES ${LLKLiveAssist_ROOT_DIR}/Config/Model/Model.json DESTINATION ${CMAKE_INSTALL_PREFIX}/Config/Model)
 
-install(IMPORTED_RUNTIME_ARTIFACTS ${TARGET_NAME} 
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
-)
+install(DIRECTORY ${LLKLiveAssist_ROOT_DIR}/Config DESTINATION ${CMAKE_INSTALL_PREFIX}/)
+
+
+
+function(add_env_dll_to_list target list)
+  if(WIN32)
+      string(REPLACE ";" ";\n" PATH_LIST "$ENV{PATH}")  # 处理 Windows 分号
+      string(REPLACE "\\" "/" PATH_LIST "${PATH_LIST}")  # 处理 Windows \
+  else()
+      string(REPLACE ":" "\\;" PATH_LIST "$ENV{PATH}")  # 处理 Unix 冒号
+  endif()
+
+
+  set(tmp_list ${${list}})  # 初始化临时列表
+  FOREACH(dll_path ${PATH_LIST})
+      if(EXISTS "${dll_path}/${target}" AND NOT IS_DIRECTORY "${dll_path}/${target}")
+        list(APPEND tmp_list "${dll_path}/${target}" )
+        message(STATUS "Found ${target} at: ${dll_path}")
+        break()
+      endif()
+  ENDFOREACH()
+  set(${list} ${tmp_list} PARENT_SCOPE)  # 传递到父作用域
+
+
+endfunction()
+set(Assist_installable_dll 
+${PROJECT_BINARY_DIR}/Vendor/ElaWidgetTools/ElaWidgetTools/ElaWidgetTools.dll
+${PROJECT_BINARY_DIR}/Vendor/ElaWidgetTools/ElaPacketIO/ElaPacketIO.dll
+${LLKLiveAssist_ROOT_DIR}/Vendor/OpenSSL/bin/libssl-3-x64.dll
+${LLKLiveAssist_ROOT_DIR}/Vendor/OpenSSL/bin/libcrypto-3-x64.dll)
+
+
+add_env_dll_to_list( libgcc_s_seh-1.dll Assist_installable_dll)
+add_env_dll_to_list( libstdc++-6.dll Assist_installable_dll)
+add_env_dll_to_list( libwinpthread-1.dll Assist_installable_dll)
+
+
+
+install(FILES ${Assist_installable_dll} DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(FILES ${LLKLiveAssist_ROOT_DIR}/LICENSE DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(FILES ${LLKLiveAssist_ROOT_DIR}/README.md DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(CODE "message(\"check qt dependence install message.\")")
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    set(QT_PATH ${LLKLiveAssist_ROOT_DIR}/Vendor/QT/5.12.12/mingw73_64)
+    set(MY_APP_EXE ${CMAKE_INSTALL_PREFIX}/${TARGET_NAME}.exe)   
+
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    install(CODE "execute_process(
+            COMMAND ${QT_PATH}/bin/windeployqt 
+            --debug 
+            --no-compiler-runtime 
+            --no-translations 
+            ${MY_APP_EXE})")
+    else()
+    install(CODE "execute_process(
+            COMMAND ${QT_PATH}/bin/windeployqt 
+            --release  
+            --no-compiler-runtime 
+            --no-translations 
+            ${MY_APP_EXE})")
+    endif()
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    set(QT_PATH ${LLKLiveAssist_ROOT_DIR}/Vendor/QT/5.12.12/msvc2017_64)
+    set(MY_APP_EXE ${CMAKE_INSTALL_PREFIX}/${TARGET_NAME}.exe)      
+
+    install(CODE "execute_process(
+    COMMAND cmd.exe /c if \"$(Configuration)\" == \"Debug\"
+    ${QT_PATH}/bin/windeployqt 
+    --debug 
+    --no-compiler-runtime # 避免拷贝编译器运行时（可选）
+    --no-translations     # 可选：不拷贝翻译文件
+
+    ${MY_APP_EXE}         # 指定目标可执行文件)")   
+    
+    install(CODE "execute_process(
+    COMMAND cmd.exe /c if \"$(Configuration)\" == \"Release\"
+    ${QT_PATH}/bin/windeployqt 
+    --release  
+    --no-compiler-runtime # 避免拷贝编译器运行时（可选）
+    --no-translations     # 可选：不拷贝翻译文件
+    
+    ${MY_APP_EXE}         # 指定目标可执行文件)")
+
+
+endif()

@@ -10,6 +10,7 @@
 #include <QCursor>
 #include <QFontDatabase>
 #include <QWidget>
+#include <qglobal.h>
 #include <qnamespace.h>
 
 #include "ElaContentDialog.h"
@@ -60,6 +61,18 @@ AssistRuntimeWindow::AssistRuntimeWindow(QWidget *parent) : ElaWindow(parent) {
 
 void AssistRuntimeWindow::initWindow() {
 
+  QApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
+  QFontDatabase::addApplicationFont(":/Resource/Font/ElaAwesome.ttf");
+  QFontDatabase::addApplicationFont(":/Resource/Font/Roboto.ttf");
+  QFontDatabase::addApplicationFont(":/Resource/Font/PingFang-SC-Regular.ttf");
+  //默认字体
+  QFont font = qApp->font();
+  font.setPixelSize(13);
+  font.setFamily("Roboto");
+  
+  font.setHintingPreference(QFont::PreferNoHinting);
+  qApp->setFont(font);
+
   // setIsEnableMica(true);
   // setIsCentralStackedWidgetTransparent(true);
   setWindowIcon(QIcon(":/Resource/Image/LLK.jpg"));
@@ -76,12 +89,7 @@ void AssistRuntimeWindow::initWindow() {
   // setIsStayTop(true);
   // setUserInfoCardVisible(false);
 
-  // 默认字体
-  QFont font = qApp->font();
-  font.setPixelSize(13);
-  font.setFamily(" ");
-  font.setHintingPreference(QFont::PreferNoHinting);
-  qApp->setFont(font);
+  
 }
 
 void AssistRuntimeWindow::initEdgeLayout() {

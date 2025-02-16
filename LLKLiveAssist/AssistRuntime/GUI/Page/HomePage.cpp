@@ -7,6 +7,7 @@
 #include <QPainter>
 #include <QTimer>
 #include <QVBoxLayout>
+#include <qnamespace.h>
 #include <system_error>
 
 #include "Def.h"
@@ -200,6 +201,8 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
   pivotAreaLayout->addWidget(m_pivot);
   pivotLayout->addWidget(pivotArea);
 
+
+  int line_editor_hight = 35;
   // biliconfig
   QWidget *bili_config = new QWidget(this);
   QVBoxLayout *bili_config_layout = new QVBoxLayout();
@@ -218,17 +221,20 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
                                 ->getUserCode();
     auto uid_line_edit = new ElaLineEdit(this);
     uid_line_edit->setText(bili_config_data.c_str());
-
+    uid_line_edit->setFixedWidth(160);
+    uid_line_edit->setFixedHeight(line_editor_hight);
+    uid_line_edit->setMaxLength(13);
     ElaScrollPageArea *uid_textbox_area = new ElaScrollPageArea(this);
     QHBoxLayout *uid_texbox_area_Layout = new QHBoxLayout(uid_textbox_area);
     ElaText *toggleButtonText = new ElaText("用户身份码：", this);
     toggleButtonText->setTextPixelSize(15);
+    
     uid_texbox_area_Layout->addWidget(toggleButtonText);
     uid_texbox_area_Layout->addWidget(uid_line_edit);
     uid_texbox_area_Layout->addStretch();
 
     ElaPushButton *push_button = new ElaPushButton("获取身份码", this);
-
+    
     connect(push_button, &ElaPushButton::pressed, this, [=]() {
       QDesktopServices::openUrl(QUrl("https://play-live.bilibili.com/"));
     });
@@ -276,14 +282,19 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
 
     auto create_line_editor =
         [this, sovits_config_layout](std::string propety_name,
-                                     std::string propety_value) {
+                                     std::string propety_value,
+                                     int height,
+                                     int width) {
           auto propety_value_line_edit = new ElaLineEdit(this);
           propety_value_line_edit->setText(propety_value.c_str());
-
+          propety_value_line_edit->setFixedHeight(height);
+          propety_value_line_edit->setFixedWidth(width);
+          propety_value_line_edit->setAlignment(Qt::AlignVCenter);
           ElaScrollPageArea *textbox_area = new ElaScrollPageArea(this);
           QHBoxLayout *texbox_area_Layout = new QHBoxLayout(textbox_area);
           ElaText *propety_name_text = new ElaText(propety_name.c_str(), this);
           propety_name_text->setTextPixelSize(15);
+          propety_name_text->setFixedWidth(120);
           texbox_area_Layout->addWidget(propety_name_text);
           texbox_area_Layout->addWidget(propety_value_line_edit);
           texbox_area_Layout->addStretch();
@@ -297,12 +308,12 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
           sovits_config_layout->addWidget(textbox_area);
         };
 
-    create_line_editor("model_name", sovits_config_data.model_name);
-    create_line_editor("sovits_weights", sovits_config_data.sovits_weights);
-    create_line_editor("gpt_weights", sovits_config_data.gpt_weights);
-    create_line_editor("ref_audio_path", sovits_config_data.ref_audio_path);
-    create_line_editor("prompt_text", sovits_config_data.prompt_text);
-    create_line_editor("prompt_lang", sovits_config_data.prompt_lang);
+    create_line_editor("model_name", sovits_config_data.model_name,line_editor_hight,80);
+    create_line_editor("sovits_weights", sovits_config_data.sovits_weights,line_editor_hight,150);
+    create_line_editor("gpt_weights", sovits_config_data.gpt_weights,line_editor_hight,150);
+    create_line_editor("ref_audio_path", sovits_config_data.ref_audio_path,line_editor_hight,150);
+    create_line_editor("prompt_text", sovits_config_data.prompt_text,line_editor_hight,150);
+    create_line_editor("prompt_lang", sovits_config_data.prompt_lang,line_editor_hight,80);
   }
 
   // audio config
@@ -339,6 +350,7 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
       };
       m_comboBox->addItems(comboList);
       m_comboBox->setCurrentIndex(static_cast<int>(Dcoderformat) - 1);
+      m_comboBox->setFixedWidth(165);
       ElaScrollPageArea *comboBoxArea = new ElaScrollPageArea(this);
       QHBoxLayout *comboBoxLayout = new QHBoxLayout(comboBoxArea);
       ElaText *comboBoxText = new ElaText(propety_name, this);
@@ -365,11 +377,15 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
       auto propety_value_line_edit = new ElaLineEdit(this);
       propety_value_line_edit->setText(QString::number(propety_value));
       propety_value_line_edit->setValidator(new QIntValidator());
+      propety_value_line_edit->setFixedHeight(line_editor_hight);
+      propety_value_line_edit->setFixedWidth(100);
+      propety_value_line_edit->setMaxLength(5);
 
       ElaScrollPageArea *textbox_area = new ElaScrollPageArea(this);
       QHBoxLayout *texbox_area_Layout = new QHBoxLayout(textbox_area);
       ElaText *propety_name_text = new ElaText(propety_name, this);
       propety_name_text->setTextPixelSize(15);
+      propety_name_text->setFixedWidth(150);
       texbox_area_Layout->addWidget(propety_name_text);
       texbox_area_Layout->addWidget(propety_value_line_edit);
       texbox_area_Layout->addStretch();
@@ -392,12 +408,17 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
       auto propety_value_line_edit = new ElaLineEdit(this);
       propety_value_line_edit->setText(QString::number(propety_value));
       propety_value_line_edit->setValidator(new QIntValidator());
+      propety_value_line_edit->setFixedHeight(line_editor_hight);
+      propety_value_line_edit->setFixedWidth(100);
+      propety_value_line_edit->setMaxLength(5);
 
       ElaScrollPageArea *textbox_area = new ElaScrollPageArea(this);
       QHBoxLayout *texbox_area_Layout = new QHBoxLayout(textbox_area);
       ElaText *propety_name_text = new ElaText(propety_name, this);
       propety_name_text->setTextPixelSize(15);
+      propety_name_text->setFixedWidth(150);
       texbox_area_Layout->addWidget(propety_name_text);
+      
       texbox_area_Layout->addWidget(propety_value_line_edit);
       texbox_area_Layout->addStretch();
 

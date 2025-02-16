@@ -63,10 +63,21 @@ std::vector<uint8_t> GSoVITSAssist::popAudioSteam() {
 std::error_code GSoVITSAssist::start() {
   // 启动gpt-sovits实例
   {
+    
+#ifdef LLKDebug
     std::string gps_sovist_args = std::format(
         "{0}runtime/python.exe {0}api_v2.py -a {1} -p {2} -c "
         "{0}GPT_SoVITS/configs/tts_infer.yaml",
         GPT_SOVITS_ROOT, request_host, std::to_string(request_port));
+#endif
+#ifdef LLKRelease
+    std::string gps_sovist_args = std::format(
+      "{0}runtime/python.exe api_v2.py -a {1} -p {2} -c "
+      "GPT_SoVITS/configs/tts_infer.yaml",
+      GPT_SOVITS_ROOT, request_host, std::to_string(request_port));
+#endif
+    std::cout<<gps_sovist_args<<std::endl;
+    std::cout<<std::filesystem::current_path()<<std::endl;
     m_gpt_sovist_process = std::make_unique<boost::process::child>(
         gps_sovist_args, boost::process::start_dir(GPT_SOVITS_ROOT));
 
