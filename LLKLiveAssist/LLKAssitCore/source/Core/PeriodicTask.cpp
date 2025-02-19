@@ -31,7 +31,8 @@ void PeriodicTask::CommitTask() { m_io_ctx.run(); }
 
 void PeriodicTask::onTimerEnd(const boost::system::error_code &e) {
   if (e) {
-    std::cout << e.what() << std::endl;
+    CORE_ERROR_TAG("PeriodicTask", "onTimerEnd error : {}",e.message());
+    
     return;
   }
   if (!m_isRunning)

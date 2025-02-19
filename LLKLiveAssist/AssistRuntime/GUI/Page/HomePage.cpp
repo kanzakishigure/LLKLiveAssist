@@ -81,13 +81,14 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
 
   ElaToggleSwitch *start_toggleSwitch = new ElaToggleSwitch(this);
   ElaScrollPageArea *start_toggleSwitchArea = new ElaScrollPageArea(this);
+  start_toggleSwitchArea->setFixedWidth(280);
   QHBoxLayout *start_toggleSwitchLayout =
       new QHBoxLayout(start_toggleSwitchArea);
   ElaText *start_toggleSwitchText = new ElaText("Assist Core 已停止", this);
 
   start_toggleSwitchText->setTextPixelSize(18);
   start_toggleSwitchLayout->addWidget(start_toggleSwitchText);
-  start_toggleSwitchLayout->addSpacing(50);
+  start_toggleSwitchLayout->addSpacing(30);
   start_toggleSwitchLayout->addWidget(start_toggleSwitch);
 
   start_toggleSwitchLayout->addStretch();

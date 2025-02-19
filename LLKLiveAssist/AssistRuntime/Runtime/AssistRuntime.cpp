@@ -8,9 +8,12 @@
 #include "ModuleManager.h"
 #include <exception>
 #include <functional>
+#include <qchar.h>
+#include <qdebug.h>
 #include <system_error>
 #include <exception>
-
+#include <QDebug>
+#include <QString>
 namespace NAssist {
 
   NAssist::AssistRuntime* NAssist::AssistRuntime::instance = nullptr;
@@ -24,8 +27,6 @@ AssistRuntime::~AssistRuntime() {
 
 void AssistRuntime::init() {
 
-
- 
   // Initialize the assist core
   // create and add plugins
   std::shared_ptr<AudioAssist> audio_assist = std::make_shared<AudioAssist>();
@@ -44,6 +45,7 @@ void AssistRuntime::init() {
 void AssistRuntime::shutdown() {
   // Shutdown the assist core
  ModuleManager::getInstance().shutdown();
+ 
  //join main therad
  if (m_core_thread.joinable())
  {
@@ -72,6 +74,8 @@ void AssistRuntime::stratAllModule(std::function<void(const std::error_code)> ca
 		
 	
 		auto res = ModuleManager::getInstance().startAllModule();
+    if(res)
+    qDebug() << res.message().c_str();
 		callback(res);
 		});
 }

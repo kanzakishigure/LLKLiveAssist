@@ -1,7 +1,7 @@
 set(TARGET_NAME AssistRuntime)
 
 
-set(CMAKE_CXX_STANDARD 17)
+
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(USE_RCC TRUE)
 
@@ -34,9 +34,22 @@ if(USE_RCC)
   qt5_add_big_resources(RCC_PROJECT_SOURCES 
   ${TARGET_NAME}.qrc
   ${LLKLiveAssist_ROOT_DIR}/Vendor/ElaWidgetTools/ElaWidgetTools/include/ElaWidgetTools.qrc)
-  add_executable(${TARGET_NAME} ${RCC_PROJECT_SOURCES} Resource/LLKLiveAssist.rc)
+  
+
+  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_executable(${TARGET_NAME}  ${RCC_PROJECT_SOURCES} Resource/LLKLiveAssist.rc)
+  elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+    add_executable(${TARGET_NAME} WIN32 ${RCC_PROJECT_SOURCES} Resource/LLKLiveAssist.rc)
+  endif()
+  
 else()
-  add_executable(${TARGET_NAME} ${HEADER_FILES} ${SOURCE_FILES}  Resource/LLKLiveAssist.rc)
+
+  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_executable(${TARGET_NAME} WIN32 ${HEADER_FILES} ${SOURCE_FILES}  Resource/LLKLiveAssist.rc)
+  elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+    add_executable(${TARGET_NAME} WIN32 ${HEADER_FILES} ${SOURCE_FILES}  Resource/LLKLiveAssist.rc)
+  endif()
+  
 endif()
 
 

@@ -38,7 +38,7 @@ bool ModuleManager::startModule(PluginType type) {
       if (!res)
         return true;
       else
-        std::cout << res.message() << std::endl;
+        CORE_ERROR_TAG("ModuleManager", "start module fail : {}",res.message());
     }
   }
   return false;

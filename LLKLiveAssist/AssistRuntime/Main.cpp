@@ -14,9 +14,7 @@
 namespace NAssist {
 
 int Main(int argc, char **argv) {
-  // init the AssistCore
-  AssistRuntime instance;
-
+ 
   // init the gui
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
   QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
@@ -30,12 +28,18 @@ int Main(int argc, char **argv) {
 #endif
 #endif
 
+  LLKLogger::instance()->init();
+  // init the AssistCore
+  AssistRuntime instance;
+
+
+
   QApplication app(argc, argv);
   eApp->init();
   AssistRuntimeWindow w;
   w.show();
   auto exit_code = app.exec();
-
+  LLKLogger::instance()->shutdown();
   return exit_code;
 }
 } // namespace NAssist

@@ -1,4 +1,6 @@
 ﻿#include "GSoVITSAssist.h"
+#include "Core/ErrorCode.h"
+#include "Core/logger.h"
 #include "ModuleManager.h"
 #include "Net/HttpRequest.h"
 #include "Net/TCPClient.h"
@@ -16,6 +18,7 @@
 #include <sstream>
 #include <stdint.h>
 #include <string>
+#include <system_error>
 #include <vector>
 
 namespace NAssist {
@@ -40,11 +43,13 @@ void GSoVITSAssist::init() {
       auto jv = boost::json::parse(content);
       auto result = Parser<GSoVITSModel>::parse(jv);
       if (result.index() == 1) {
-        std::cout << "load model fail!" << std::endl;
+
+        CORE_ERROR_TAG("GSoVITSAssist", "GSoVITSAssist load model fail!");
       }
       m_GSoVITSModel = get<0>(result);
     }
   }
+  CORE_INFO_TAG("GSoVITSAssist", "GSoVITSAssist init success");
 }
 
 void GSoVITSAssist::pushAudioStream(std::vector<uint8_t> bytes_stream) {
@@ -62,8 +67,9 @@ std::vector<uint8_t> GSoVITSAssist::popAudioSteam() {
 }
 std::error_code GSoVITSAssist::start() {
   // 启动gpt-sovits实例
+
   {
-    
+
 #ifdef LLKDebug
     std::string gps_sovist_args = std::format(
         "{0}runtime/python.exe {0}api_v2.py -a {1} -p {2} -c "
@@ -72,14 +78,20 @@ std::error_code GSoVITSAssist::start() {
 #endif
 #ifdef LLKRelease
     std::string gps_sovist_args = std::format(
-      "{0}runtime/python.exe api_v2.py -a {1} -p {2} -c "
-      "GPT_SoVITS/configs/tts_infer.yaml",
-      GPT_SOVITS_ROOT, request_host, std::to_string(request_port));
+        "{0}runtime/python.exe api_v2.py -a {1} -p {2} -c "
+        "GPT_SoVITS/configs/tts_infer.yaml",
+        GPT_SOVITS_ROOT, request_host, std::to_string(request_port));
 #endif
-    std::cout<<gps_sovist_args<<std::endl;
-    std::cout<<std::filesystem::current_path()<<std::endl;
+    std::error_code ec;
+
+    CORE_TRACE_TAG("GSoVITSAssist", "gps_sovist_args is {}", gps_sovist_args);
+
     m_gpt_sovist_process = std::make_unique<boost::process::child>(
-        gps_sovist_args, boost::process::start_dir(GPT_SOVITS_ROOT));
+        gps_sovist_args, boost::process::start_dir(GPT_SOVITS_ROOT), ec);
+
+    if (ec) {
+      return make_error_code(gpt_sovits_errc::gsovist_not_found);
+    }
 
     // 尝试使用tcp连接服务
     TCPClient tcp(request_host, request_port);
@@ -88,21 +100,23 @@ std::error_code GSoVITSAssist::start() {
         break;
       }
     }
-    std::cout << "gpt-sovist init success" << std::endl;
+    CORE_INFO_TAG("GSoVITSAssist", "gpt-sovist start success");
   }
   // set the sovits model and gpt model
   {
     std::shared_ptr<HttpRequest> request = HttpRequest::CreateRequest(
         request_url, set_gpt_weights_endpoint, HttpRequestMethod::get);
-
-    std::cout << request->Receive() << std::endl;
+    request->AddRequestParameter("weights_path", m_GSoVITSModel.gpt_weights);
+    CORE_INFO_TAG("GSoVITSAssist", "set_gpt_weights :{}", request->Receive());
   }
 
   {
     std::shared_ptr<HttpRequest> request = HttpRequest::CreateRequest(
         request_url, set_sovits_weights_endpoint, HttpRequestMethod::get);
+    request->AddRequestParameter("weights_path", m_GSoVITSModel.sovits_weights);
 
-    std::cout << request->Receive() << std::endl;
+    CORE_INFO_TAG("GSoVITSAssist", "set_sovits_weights :{}",
+                  request->Receive());
   }
   // generate request body use data from model
   m_request_body.text_lang = "zh";
@@ -147,9 +161,8 @@ void GSoVITSAssist::shutdown() {
   if (m_gpt_sovist_process) {
     m_gpt_sovist_process->terminate();
   }
+  CORE_INFO_TAG("GSoVITSAssist", "GSoVITSAssist shutdown");
 }
-
-void GSoVITSAssist::drawUI() {}
 
 void GSoVITSAssist::pushMsg(const std::string &msg) {
 
@@ -178,7 +191,9 @@ void GSoVITSAssist::commitRequest2GSoVits(const std::string &msg) {
       request->AsyncReceive([request, msg](boost::beast::error_code ec,
                                            std::size_t transfered) {
         if (ec) {
-          std::cout << "error" << ec.what() << std::endl;
+
+          CORE_ERROR_TAG("GSoVITSAssist", "commitRequest2GSoVits fail : {}",
+                         ec.what());
           return;
         }
         auto response = request->GetRespons();

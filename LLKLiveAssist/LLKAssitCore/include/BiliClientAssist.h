@@ -31,7 +31,7 @@ public:
   virtual void init() override;
   virtual std::error_code start() override;
   virtual void shutdown() override;
-  virtual void drawUI() override;
+  
 
   virtual PluginType getType() override { return PluginType::BiliClient; }
   static PluginType getStaticType() { return PluginType::BiliClient; }

@@ -62,8 +62,10 @@ std::error_code make_error_code(gpt_sovits_errc ec) {
     virtual std::string message(int val) const override {
       switch (static_cast<gpt_sovits_errc>(val)) {
 
-      case gpt_sovits_errc::success:
+      case gpt_sovits_errc::success :
         return "success";
+      case gpt_sovits_errc::gsovist_not_found :
+        return "gptsovits 路径错误或未安装GPT-Sovits";
       default:
         return "undefined error";
       }

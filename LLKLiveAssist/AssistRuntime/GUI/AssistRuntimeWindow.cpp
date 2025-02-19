@@ -1,4 +1,7 @@
 #include "AssistRuntimeWindow.h"
+#include "Core/logger.h"
+#include "Def.h"
+#include "ElaPlainTextEdit.h"
 #include "ElaWindow.h"
 
 #include <QDebug>
@@ -12,6 +15,7 @@
 #include <QWidget>
 #include <qglobal.h>
 #include <qnamespace.h>
+#include <qtextedit.h>
 
 #include "ElaContentDialog.h"
 #include "ElaDockWidget.h"
@@ -28,8 +32,12 @@
 
 #include "Page/HomePage.h"
 #include "Page/LogWidget.h"
+#include "Page/SettingPage.h"
 
 
+#include "Page/SettingPage.h"
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/qt_sinks.h"
 namespace NAssist {
 
 AssistRuntimeWindow::AssistRuntimeWindow(QWidget *parent) : ElaWindow(parent) {
@@ -44,16 +52,16 @@ AssistRuntimeWindow::AssistRuntimeWindow(QWidget *parent) : ElaWindow(parent) {
   initContent();
 
   // 拦截默认关闭事件
-  _closeDialog = new ElaContentDialog(this);
-  connect(_closeDialog, &ElaContentDialog::rightButtonClicked, this,
+  m_closeDialog = new ElaContentDialog(this);
+  connect(m_closeDialog, &ElaContentDialog::rightButtonClicked, this,
           &AssistRuntimeWindow::closeWindow);
-  connect(_closeDialog, &ElaContentDialog::middleButtonClicked, this, [=]() {
-    _closeDialog->close();
+  connect(m_closeDialog, &ElaContentDialog::middleButtonClicked, this, [=]() {
+    m_closeDialog->close();
     showMinimized();
   });
   this->setIsDefaultClosed(false);
   connect(this, &AssistRuntimeWindow::closeButtonClicked, this,
-          [=]() { _closeDialog->exec(); });
+          [=]() { m_closeDialog->exec(); });
 
   // 移动到中心
   moveToCenter();
@@ -100,16 +108,30 @@ void AssistRuntimeWindow::initEdgeLayout() {
   toolBar->setToolButtonStyle(Qt::ToolButtonIconOnly);
   toolBar->setIconSize(QSize(25, 25));
   // Set logger
+  /*
   ElaDockWidget *logDockWidget = new ElaDockWidget("日志信息", this);
   logDockWidget->setWidget(new LogWidget(this));
   this->addDockWidget(Qt::RightDockWidgetArea, logDockWidget);
   resizeDocks({logDockWidget}, {200}, Qt::Horizontal);
+  
+  */
+
+  ElaDockWidget* log_dock_widget = new ElaDockWidget("日志信息", this);
+  QPlainTextEdit* log_editor = new ElaPlainTextEdit(this);
+  log_editor->setReadOnly(true);
+  log_dock_widget->setWidget(log_editor);
+    this->addDockWidget(Qt::BottomDockWidgetArea, log_dock_widget);
+    resizeDocks({log_dock_widget}, {300}, Qt::Horizontal);
+    LLKLogger::instance()->addLogger(spdlog::qt_logger_mt("qt_logger", log_editor), LLKLogger::Type::GUI);
+    GUI_INFO("LLKLogger init success");
 }
 
 void AssistRuntimeWindow::initContent() {
 
   m_homePage = new HomePage(this);
   addPageNode("HOME", m_homePage, ElaIconType::House);
+  m_settingPage = new SettingPage(this );
+  addFooterNode("Setting", m_settingPage, m_settingKey, 0, ElaIconType::GearComplex);
 }
 
 } // namespace NAssist

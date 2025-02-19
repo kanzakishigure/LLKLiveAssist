@@ -1,9 +1,8 @@
 #include "BiliClientAssist.h"
 #include <chrono>
-#include <cmath>
+
 #include <format>
 #include <functional>
-#include <iostream>
 #include <map>
 #include <memory>
 #include <random>
@@ -11,7 +10,7 @@
 #include <string>
 #include <thread>
 
-
+#include "Core/logger.h"
 #include "Data/ProtoPacket.h"
 #include "GSoVITSAssist.h"
 #include "ModuleManager.h"
@@ -45,25 +44,25 @@ BiliClientAssist::BiliWebCMD string2BiliWebCMD(std::string cmd) {
 }
 
 void BiliClientAssist::init() {
-  std::cout << "BiliClientAssist Init\n";
+  CORE_INFO_TAG("BiliClient", "BiliClientAssist init");
   // TODO: initiate the data from json file.
   m_AccessKey = "BP2Yl3cBDNc225qmrK53Fsyv";
   m_AccessKeySecret = "idiGra89obnAzmlZNjWRnw9jDi6vY6";
   m_AppId = "1739800103262";
   m_Code = "ECXQ2PEZ63289";
 
-  SetConsoleOutputCP(CP_UTF8);
+  // SetConsoleOutputCP(CP_UTF8);
 
   app_heart_periodic_task = std::make_shared<PeriodicTask>(
       [this]() {
-        std::cout << "app heartbeat" << std::endl;
+        CORE_TRACE_TAG("BiliClient", "app heartbeat");
         HeartBeatInteractivePlay(m_AppStartInfo.GameInfo.GameId);
       },
       20);
 
   game_heart_periodic_task = std::make_shared<PeriodicTask>(
       [this]() {
-        std::cout << "game heartbeat" << std::endl;
+        CORE_TRACE_TAG("BiliClient", "game heartbeat");
         HeartBeatWebsocketClient();
       },
       30);
@@ -85,10 +84,12 @@ void BiliClientAssist::shutdown() {
   if (gamethread.joinable()) {
     gamethread.join();
   }
+  CORE_INFO_TAG("BiliClient", "BiliClientAssist shutdown");
 }
-void BiliClientAssist::drawUI() {}
+
 std::error_code BiliClientAssist::start() {
-  std::cout << "BiliClientAssist Start function\n";
+
+  CORE_INFO_TAG("BiliClient", "BiliClientAssist start");
   StartInteractivePlay();
   AuthWebsocket();
 
@@ -137,13 +138,14 @@ void BiliClientAssist::HeartBeatInteractivePlay(std::string gameId) {
           .str();
   auto json_value = RequestWebUTF8(OpenLiveDomain, k_InteractivePlayHeartBeat,
                                    HttpRequestMethod::post, param);
+  CORE_TRACE_TAG("BiliClient", "app heartbeat success");
 }
 
 boost::json::value BiliClientAssist::RequestWebUTF8(
     std::string host, std::string uri, HttpRequestMethod request_method,
     std::string param, std::string cookie /*= ""*/) {
   if (!cookie.empty()) {
-    std::cout << "bilibili cookie not support cookie" << std::endl;
+    CORE_ERROR_TAG("BiliClient", "bilibili http request not support cookie");
   }
   // bilibili鉴权 header
   auto now_ms = std::chrono::duration_cast<std::chrono::microseconds>(
@@ -190,15 +192,16 @@ boost::json::value BiliClientAssist::RequestWebUTF8(
   }
   auto data = m_bili_request->Receive();
 
-  std::cout << data << std::endl;
   // parse the data to json data
   boost::json::value result;
   try {
     result = boost::json::parse(data);
   } catch (std::bad_alloc const &e) {
-    std::cout << "Parsing failed: " << e.what() << "\n";
+    CORE_ERROR_TAG("BiliClient", "http response pasrse fail :{}", e.what());
   }
 
+  CORE_TRACE_TAG("BiliClient", "http response is :\n{}",
+                 pretty_json_string(result));
   return result;
 }
 
@@ -220,16 +223,20 @@ void BiliClientAssist::AuthWebsocket() {
   m_bili_websocket->AsyncConnect([this, bytes]() {
     m_bili_websocket->AsyncSend(bytes, [this](boost::beast::error_code ec,
                                               std::size_t bytes_transferred) {
-      if (ec)
-        std::cout << ec.what();
+      if (ec) {
+        CORE_ERROR_TAG("BiliClient", "bilibili auth send fail :", ec.what());
+      }
 
       m_bili_websocket->AsyncReceive(
           [this](boost::beast::error_code ec, std::size_t bytes_transferred) {
-            if (ec)
-              std::cout << ec.what();
-            std::cout << boost::beast::make_printable(
-                             m_bili_websocket->GetBuffer().data())
-                      << std::endl;
+            if (ec) {
+              CORE_ERROR_TAG("BiliClient",
+                             "bilibili auth receive fail :", ec.what());
+            }
+            std::stringstream ss;
+            ss << boost::beast::make_printable(
+                m_bili_websocket->GetBuffer().data());
+            CORE_INFO_TAG("BiliClient", "bilibili auth result: {}", ss.str());
           });
     });
   });
@@ -245,7 +252,7 @@ void BiliClientAssist::HeartBeatWebsocketClient() {
   packet.header.sequence_id = 1;
   std::vector<uint8_t> bytes = ProtoPacket2bytes(packet);
   m_bili_websocket->Send(bytes);
-  std::cout << "game heartbeat success" << std::endl;
+  CORE_TRACE_TAG("BiliClient", "game heartbeat success");
 }
 
 void BiliClientAssist::WebsocketClientReceive() {
@@ -279,8 +286,8 @@ void BiliClientAssist::WebsocketClientReceive() {
     BiliWebCMD bili_cmd = string2BiliWebCMD(cmd);
     switch (bili_cmd) {
     case BiliWebCMD::LIVE_OPEN_PLATFORM_DM: {
-      std::cout << "LIVE_OPEN_PLATFORM_DM" << std::endl;
 
+      CORE_TRACE_TAG("BiliClient", "websocket receive LIVE_OPEN_PLATFORM_DM");
       auto p = ModuleManager::getInstance().getModule<GSoVITSAssist>();
       std::string uname = json_value.at("data").at("uname").as_string().c_str();
       std::string content = json_value.at("data").at("msg").as_string().c_str();
@@ -289,23 +296,29 @@ void BiliClientAssist::WebsocketClientReceive() {
       break;
     }
     case BiliWebCMD::LIVE_OPEN_PLATFORM_SEND_GIFT: {
-      std::cout << "LIVE_OPEN_PLATFORM_SEND_GIFT" << std::endl;
+
+      CORE_TRACE_TAG("BiliClient",
+                     "websocket receive LIVE_OPEN_PLATFORM_SEND_GIFT");
       break;
     }
     case BiliWebCMD::LIVE_OPEN_PLATFORM_SUPER_CHAT: {
-      std::cout << "LIVE_OPEN_PLATFORM_SUPER_CHAT" << std::endl;
+      CORE_TRACE_TAG("BiliClient",
+                     "websocket receive LIVE_OPEN_PLATFORM_SUPER_CHAT");
       break;
     }
     case BiliWebCMD::LIVE_OPEN_PLATFORM_SUPER_CHAT_DEL: {
-      std::cout << "LIVE_OPEN_PLATFORM_SUPER_CHAT_DEL" << std::endl;
+      CORE_TRACE_TAG("BiliClient",
+                     "websocket receive LIVE_OPEN_PLATFORM_SUPER_CHAT_DEL");
       break;
     }
     case BiliWebCMD::LIVE_OPEN_PLATFORM_GUARD: {
-      std::cout << "LIVE_OPEN_PLATFORM_GUARD" << std::endl;
+
+      CORE_TRACE_TAG("BiliClient",
+                     "websocket receive LIVE_OPEN_PLATFORM_GUARD");
       break;
     }
     case BiliWebCMD::LIVE_OPEN_PLATFORM_LIKE: {
-      std::cout << "LIVE_OPEN_PLATFORM_LIKE" << std::endl;
+      CORE_TRACE_TAG("BiliClient", "websocket receive LIVE_OPEN_PLATFORM_LIKE");
       break;
     }
     case BiliWebCMD::None: {

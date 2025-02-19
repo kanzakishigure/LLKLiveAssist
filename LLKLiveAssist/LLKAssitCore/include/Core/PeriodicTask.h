@@ -3,7 +3,7 @@
 #include <boost/asio/strand.hpp>
 #include <boost/beast/core.hpp>
 
-
+#include "Core/logger.h"
 #include <cstdlib>
 #include <functional>
 #include <iostream>

@@ -25,23 +25,23 @@ void AudioAssist::init() {
       },
       1.0);
 
-  std::cout << "AudioAssist Init \n" << std::endl;
+  CORE_INFO_TAG("AudioAssist", "AudioAssist Init success");
 }
 
 void AudioAssist::shutdown() {
-  std::cout << "AudioAssist Shutdown \n" << std::endl;
+
   m_PlaybackTask->Stop();
   if (m_PlaybackThread.joinable()) {
     m_PlaybackThread.join();
   }
+  CORE_INFO_TAG("AudioAssist", "AudioAssist Shutdown");
 }
 
-void AudioAssist::drawUI() {}
-
 std::error_code AudioAssist::start() {
-  std::cout << "AudioAssist Start \n" << std::endl;
+
   m_PlaybackThread = std::thread([this] { m_PlaybackTask->Start(); });
 
+  CORE_INFO_TAG("AudioAssist", "AudioAssist Start success");
   return make_error_code(audio_engine_errc::success);
 }
 
@@ -107,12 +107,14 @@ std::shared_ptr<AudioEngine> AudioEngine::Create() {
 
 AudioEngine::AudioEngine() {
   init();
-  std::cout << "AudioEngine init \n" << std::endl;
+
+  CORE_INFO_TAG("AudioEngine", "AudioEngine init");
 }
 
 AudioEngine::~AudioEngine() {
   uninit();
-  std::cout << "AudioEngine uninit \n" << std::endl;
+
+  CORE_INFO_TAG("AudioEngine", "AudioEngine uninit");
 }
 
 void AudioEngine::init() {

@@ -20,6 +20,7 @@ std::error_code make_error_code(audio_engine_errc ec);
 
 enum class gpt_sovits_errc {
   success = 0,
+  gsovist_not_found,
 };
 std::error_code make_error_code(gpt_sovits_errc ec);
 

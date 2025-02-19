@@ -10,6 +10,8 @@
 #include <boost/asio/ssl/stream.hpp>
 #include <boost/beast/ssl.hpp>
 #include <functional>
+#include <tuple>
+#include <vector>
 
 namespace NAssist {
 enum class HttpRequestMethod {
@@ -31,7 +33,7 @@ public:
               HttpRequestMethod request_method);
   ~HttpRequest();
   void AddHeader(const std::string &key, const std::string &value);
-
+  void AddRequestParameter(const std::string &key, const std::string &value);
   void ClearHeader();
   void SetContent(const std::string &data);
   void SetTarget(const std::string &url);
@@ -50,7 +52,7 @@ public:
 private:
   std::string m_Host;
   std::string m_Uri;
-
+  std::vector<std::tuple<std::string,std::string>> m_RequestParameter;
   HttpRequestType request_type = HttpRequestType::http;
 
   boost::asio::io_context m_io_ctx;

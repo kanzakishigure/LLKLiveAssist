@@ -1,5 +1,6 @@
 #pragma once
 #include "Core/ErrorCode.h"
+#include "Core/logger.h"
 namespace NAssist {
 
 enum class PluginType {
@@ -13,7 +14,7 @@ public:
   virtual void init() = 0;
   virtual std::error_code start() = 0;
   virtual void shutdown() = 0;
-  virtual void drawUI() = 0;
+
 
   virtual PluginType getType() { return PluginType::None; }
   static PluginType getStaticType() { return PluginType::None; }

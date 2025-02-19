@@ -6,11 +6,17 @@
 #include <boost/json/serialize.hpp>
 #include <boost/winapi/error_codes.hpp>
 
+#include <sstream>
+#include <string>
 #include <system_error>
 #include <type_traits>
 #include <variant>
 
 namespace NAssist {
+
+std::string pretty_json_string( boost::json::value const &jv,
+                  std::string *indent = nullptr) ;
+
 
 class Serializeable {
 public:

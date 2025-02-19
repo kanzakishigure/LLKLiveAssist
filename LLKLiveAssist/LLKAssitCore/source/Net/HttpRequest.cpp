@@ -7,6 +7,27 @@
 #include <string>
 
 namespace NAssist {
+
+// URL编码辅助函数
+std::string url_encode(const std::string &value) {
+  std::ostringstream escaped;
+  escaped.fill('0');
+  escaped << std::hex;
+
+  for (char c : value) {
+    // 保留字母数字及其他特定字符
+    if (isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~') {
+      escaped << c;
+      continue;
+    }
+    // 其他字符转换为%XX形式
+    escaped << '%' << std::setw(2)
+            << static_cast<int>(static_cast<unsigned char>(c));
+  }
+
+  return escaped.str();
+}
+
 std::shared_ptr<HttpRequest>
 HttpRequest::CreateRequest(const std::string &url, const std::string &uri,
                            HttpRequestMethod request_method) {
@@ -124,7 +145,10 @@ HttpRequest::~HttpRequest() {
 void HttpRequest::AddHeader(const std::string &key, const std::string &value) {
   m_req.insert(key, value);
 }
-
+void HttpRequest::AddRequestParameter(const std::string &key,
+                                      const std::string &value) {
+  m_RequestParameter.emplace_back() = {key, value};
+}
 void HttpRequest::ClearHeader() { m_req.clear(); }
 
 void HttpRequest::SetContent(const std::string &data) {
@@ -138,6 +162,16 @@ void HttpRequest::SetTarget(const std::string &url) { m_req.target(url); }
 std::string HttpRequest::Receive() {
   // Send the HTTP request to the remote host
   std::string result;
+  if (!m_RequestParameter.empty()) {
+    std::string query = m_Uri;
+    for (auto const &[key, value] : m_RequestParameter) {
+      if (!query.empty())
+        query += "&";
+      query += url_encode(key) + "=" + url_encode(value);
+    }
+    std::string target = m_Uri += "?" + query;
+    m_req.target(target);
+  }
   try {
 
     switch (request_type) {

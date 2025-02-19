@@ -1,9 +1,10 @@
 #include "Net/WebsocketClient.h"
-
+#include "Core/logger.h"
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
 #include <map>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -62,7 +63,8 @@ WebsocketClient::WebsocketClient(const std::string &host)
     }
 
   } catch (const std::exception &e) {
-    std::cout << e.what() << std::endl;
+    CORE_ERROR_TAG("WebsocketClient", "WebsocketClient construct error : {}",e.what());
+    
   }
 }
 
@@ -123,9 +125,11 @@ void WebsocketClient::Receive() {
 
     m_sync_stream.read(m_buffer);
 
-    std::cout << boost::beast::make_printable(m_buffer.data()) << std::endl;
+    std::stringstream ss;
+    ss<<boost::beast::make_printable(m_buffer.data());
+    CORE_TRACE_TAG("WebsocketClient", "WebsocketClient Receive  : {}",ss.str());
   } catch (const std::exception &e) {
-    std::cerr << "Error: " << e.what() << std::endl;
+    CORE_ERROR_TAG("WebsocketClient", "WebsocketClient Receive error : {}",e.what());
   }
 }
 
@@ -173,7 +177,7 @@ AsyncWebsocketClient::AsyncWebsocketClient(const std::string &host)
     }
 
   } catch (const std::exception &e) {
-    std::cout << e.what() << std::endl;
+    CORE_ERROR_TAG("AsyncWebsocketClient", "AsyncWebsocketClient Constructor error : {}",e.what());
   }
 }
 
@@ -331,6 +335,7 @@ void AsyncWebsocketClient::on_handshake(boost::beast::error_code ec) {
     m_function_map[FunctionType::OnConnect]();
   }
   std::cout << " success handshake" << std::endl;
+  CORE_TRACE_TAG("AsyncWebsocketClient", "AsyncWebsocketClient success handshake");
 }
 
 } // namespace NAssist

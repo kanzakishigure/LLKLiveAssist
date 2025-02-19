@@ -34,6 +34,21 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
   target_compile_definitions(${TARGET_NAME} PRIVATE LLKRelease)
 endif()
 
+#查找spd库
+if(NOT TARGET spdlog)
+    # Stand-alone build
+    set(spdlog_ROOT "${LLKLiveAssist_ROOT_DIR}/Vendor/spdlog")
+    find_package(spdlog REQUIRED)
+    if(spdlog_FOUND)
+      message(STATUS "spdlog_INCLUDE_DIRS : ${spdlog_INCLUDE_DIRS}")
+      message(STATUS "spdlog_LIBRARY_DIRS : ${spdlog_LIBRARY_DIRS}")
+      message(STATUS "spdlog_LIBRARIES :    ${spdlog_LIBRARIES}")
+      
+      target_link_libraries(${TARGET_NAME}  spdlog::spdlog )
+    endif()
+    
+endif()
+
 # 查找 Boost 库
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
