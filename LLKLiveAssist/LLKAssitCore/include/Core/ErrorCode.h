@@ -11,6 +11,7 @@ std::error_code make_error_code(net_errc ec);
 
 enum class bili_client_errc {
   success = 0,
+  auth_websocket_fail,
 };
 std::error_code make_error_code(bili_client_errc ec);
 enum class audio_engine_errc {
@@ -21,6 +22,7 @@ std::error_code make_error_code(audio_engine_errc ec);
 enum class gpt_sovits_errc {
   success = 0,
   gsovist_not_found,
+  gsovist_process_dump,
 };
 std::error_code make_error_code(gpt_sovits_errc ec);
 

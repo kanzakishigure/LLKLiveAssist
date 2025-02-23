@@ -4,6 +4,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <system_error>
 
 namespace NAssist {
 
@@ -30,10 +31,7 @@ void AudioAssist::init() {
 
 void AudioAssist::shutdown() {
 
-  m_PlaybackTask->Stop();
-  if (m_PlaybackThread.joinable()) {
-    m_PlaybackThread.join();
-  }
+  auto ec = stop();
   CORE_INFO_TAG("AudioAssist", "AudioAssist Shutdown");
 }
 
@@ -44,7 +42,15 @@ std::error_code AudioAssist::start() {
   CORE_INFO_TAG("AudioAssist", "AudioAssist Start success");
   return make_error_code(audio_engine_errc::success);
 }
-
+ std::error_code AudioAssist::stop()
+{
+  m_PlaybackTask->Stop();
+  if (m_PlaybackThread.joinable()) {
+    m_PlaybackThread.join();
+  }
+  CORE_INFO_TAG("AudioAssist", "AudioAssist stop ");
+  return make_error_code(audio_engine_errc::success);
+}
 Sound::Sound(std::vector<uint8_t> bytes, std::shared_ptr<AudioEngine> engine)
     : m_audio_buffer(nullptr) {
   auto audio_assist = ModuleManager::getInstance().getModule<AudioAssist>();

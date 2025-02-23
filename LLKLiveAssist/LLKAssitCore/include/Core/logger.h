@@ -31,7 +31,7 @@ public:
   static const std::unique_ptr<LLKLogger> &instance() { return m_instance; }
   
  
-  static std::shared_ptr<spdlog::logger>& GetLogger(LLKLogger::Type type){return LLKLogger::instance()->m_loggers.at(type);}
+  static std::shared_ptr<spdlog::logger> GetLogger(LLKLogger::Type type);
   template <typename T, typename... Args>
   static std::string format(T&& fmt_s,Args &&...args);
   template <typename... Args>
@@ -62,11 +62,11 @@ private:
 #define RUNTIME_ERROR(...)    ::NAssist::LLKLogger::GetLogger(::NAssist::LLKLogger::Type::Runtime)->error(__VA_ARGS__)
 #define RUNTIME_CRITICAL(...) ::NAssist::LLKLogger::GetLogger(::NAssist::LLKLogger::Type::Runtime)->critical(__VA_ARGS__)
 
-#define GUI_TRACE(...)    ::NAssist::LLKLogger::GetLogger(::NAssist::LLKLogger::Type::GUI)->trace(__VA_ARGS__)
-#define GUI_INFO(...)     ::NAssist::LLKLogger::GetLogger(::NAssist::LLKLogger::Type::GUI)->info(__VA_ARGS__)
-#define GUI_WARN(...)     ::NAssist::LLKLogger::GetLogger(::NAssist::LLKLogger::Type::GUI)->warn(__VA_ARGS__)
-#define GUI_ERROR(...)    ::NAssist::LLKLogger::GetLogger(::NAssist::LLKLogger::Type::GUI)->error(__VA_ARGS__)
-#define GUI_CRITICAL(...) ::NAssist::LLKLogger::GetLogger(::NAssist::LLKLogger::Type::GUI)->critical(__VA_ARGS__)
+#define GUI_TRACE(...)    auto logger = ::NAssist::LLKLogger::GetLogger(::NAssist::LLKLogger::Type::GUI);if(logger)logger->trace(__VA_ARGS__) 
+#define GUI_INFO(...)     auto logger = ::NAssist::LLKLogger::GetLogger(::NAssist::LLKLogger::Type::GUI);if(logger)logger->info(__VA_ARGS__) 
+#define GUI_WARN(...)     auto logger = ::NAssist::LLKLogger::GetLogger(::NAssist::LLKLogger::Type::GUI);if(logger)logger->warn(__VA_ARGS__) 
+#define GUI_ERROR(...)    auto logger = ::NAssist::LLKLogger::GetLogger(::NAssist::LLKLogger::Type::GUI);if(logger)logger->error(__VA_ARGS__) 
+#define GUI_CRITICAL(...) auto logger = ::NAssist::LLKLogger::GetLogger(::NAssist::LLKLogger::Type::GUI);if(logger)logger->critical(__VA_ARGS__) 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Tagged logs                                                                                    
@@ -93,9 +93,8 @@ std::string LLKLogger::format(T&& fmt_s, Args &&...args) {
 template <typename... Args>
 void LLKLogger::PrintMessage(LLKLogger::Type type, LLKLogger::Level level,
                              std::string_view tag, Args &&...args) {
-  auto logger = (type == LLKLogger::Type::Core)
-                    ? LLKLogger::GetLogger(LLKLogger::Type::Core)
-                    : LLKLogger::GetLogger(LLKLogger::Type::Runtime);
+  auto logger = LLKLogger::GetLogger(type);
+ 
 
 								
   std::string_view logStringFMT = tag.empty() ? "{0}{1}" : "[{0}] {1}";

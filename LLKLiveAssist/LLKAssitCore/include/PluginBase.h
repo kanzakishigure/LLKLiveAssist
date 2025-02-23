@@ -13,6 +13,7 @@ class PluginBase {
 public:
   virtual void init() = 0;
   virtual std::error_code start() = 0;
+  virtual std::error_code stop() = 0;
   virtual void shutdown() = 0;
 
 

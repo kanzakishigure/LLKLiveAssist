@@ -15,7 +15,7 @@ namespace NAssist {
 class ModuleManager {
 public:
   ModuleManager() = default;
-  ~ModuleManager() { shutdown();}
+  ~ModuleManager() {}
 
   void shutdown();
 

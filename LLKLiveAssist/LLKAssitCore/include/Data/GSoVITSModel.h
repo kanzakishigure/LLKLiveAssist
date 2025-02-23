@@ -11,12 +11,17 @@ namespace NAssist {
 struct GSoVITSModel : public Serializeable {
 
   std::string model_name;
+  std::string model_author;
+  std::string model_img;
+  std::string model_category;
+
   std::string sovits_weights; // Sovits模型 .pth
   std::string gpt_weights;    // GPT模型 .ckpt
-
-  std::string ref_audio_path;
+  
   std::string prompt_text;
   std::string prompt_lang;
+  std::string ref_audio_path;
+  std::string model_description;
 };
 
 struct GSoVITSRequestBody : public Serializeable {

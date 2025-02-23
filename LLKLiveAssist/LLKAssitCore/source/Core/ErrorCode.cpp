@@ -27,6 +27,8 @@ std::error_code make_error_code(bili_client_errc ec) {
 
       case bili_client_errc::success:
         return "success";
+      case bili_client_errc::auth_websocket_fail:
+      return "auth_websocket_fail";
       default:
         return "undefined error";
       }
@@ -65,7 +67,9 @@ std::error_code make_error_code(gpt_sovits_errc ec) {
       case gpt_sovits_errc::success :
         return "success";
       case gpt_sovits_errc::gsovist_not_found :
-        return "gptsovits 路径错误或未安装GPT-Sovits";
+        return "gpt-sovits 路径错误或未安装GPT-Sovits";
+      case NAssist::gpt_sovits_errc::gsovist_process_dump:
+        return "结束 gpt-sovits 进程失败";
       default:
         return "undefined error";
       }

@@ -51,6 +51,7 @@ class AudioAssist : public PluginBase {
 public:
   virtual void init() override;
   virtual std::error_code start() override;
+  virtual std::error_code stop() override;
   
   virtual void shutdown() override;
 

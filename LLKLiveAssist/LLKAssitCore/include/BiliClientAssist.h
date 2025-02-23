@@ -30,6 +30,7 @@ public:
 
   virtual void init() override;
   virtual std::error_code start() override;
+  virtual std::error_code stop() override;
   virtual void shutdown() override;
   
 
@@ -52,7 +53,8 @@ private:
   boost::json::value RequestWebUTF8(std::string host, std::string uri,
                                     HttpRequestMethod request_method,
                                     std::string param, std::string cookie = "");
-  void AuthWebsocket();
+  
+  std::error_code AuthWebsocket();
 
   std::string m_AccessKey; // 直播创作者服务中心【个人资料】页面获取
   std::string m_AccessKeySecret; // 在直播创作者服务中心【个人资料】页面获取

@@ -3,10 +3,13 @@
 #include "Data/BiliData.h"
 #include "Data/GSoVITSModel.h"
 #include "Data/ProtoPacket.h"
+#include "GSoVITSAssist.h"
 
+#include <boost/json/parser.hpp>
 #include <iostream>
 #include <map>
 #include <stdexcept>
+#include <vector>
 
 
 namespace boost::json {
@@ -55,7 +58,7 @@ tag_invoke(const boost::json::value_to_tag<NAssist::GSoVITSModel> &,
   try {
 
     if (jv.is_null()) {
-      throw std::runtime_error("invalid json_value to NAssist::AppStartInfo");
+      throw std::runtime_error("invalid json_value to NAssist::GSoVITSModel");
     }
     model.model_name = jv.at("model_name").as_string();
     model.gpt_weights = jv.at("gpt_weights").as_string();
@@ -63,13 +66,75 @@ tag_invoke(const boost::json::value_to_tag<NAssist::GSoVITSModel> &,
     model.prompt_lang = jv.at("prompt_lang").as_string();
     model.prompt_text = jv.at("prompt_text").as_string();
     model.ref_audio_path = jv.at("ref_audio_path").as_string();
+    model.model_img = jv.at("model_img").as_string();
+    model.model_description = jv.at("model_description").as_string();
+    model.model_author = jv.at("model_author").as_string();
+    model.model_category = jv.at("model_category").as_string();
 
   } catch (const std::exception &e) {
     std::cerr << "Error: " << e.what() << std::endl;
   }
   return model;
 }
+void tag_invoke(const value_from_tag &, value &jv,
+                NAssist::GSoVITSModel const &model) {
 
+  jv = {
+
+      {"model_name", model.model_name},
+      {"sovits_weights", model.sovits_weights},
+      {"gpt_weights", model.gpt_weights},
+
+      {"ref_audio_path", model.ref_audio_path},
+      {"prompt_text", model.prompt_text},
+      {"prompt_lang", model.prompt_lang},
+
+      {"model_img", model.model_img},
+      {"model_description", model.model_description},
+      {"model_author", model.model_author},
+      {"model_category", model.model_category},
+  };
+}
+
+std::vector<NAssist::GSoVITSModel>
+tag_invoke(const boost::json::value_to_tag<std::vector<NAssist::GSoVITSModel>> &,
+           boost::json::value const &jv) {
+
+  std::vector<NAssist::GSoVITSModel> models;
+  try {
+
+    if (jv.is_null()||!jv.is_array()) {
+      throw std::runtime_error("invalid json_value to std::vector<NAssist::GSoVITSModel>");
+    }
+    auto array = jv.as_array();
+
+    for(const auto& model_json : array)
+    {
+      auto res = NAssist::Parser<NAssist::GSoVITSModel>().parse(model_json);
+      if(res.index()==1)
+      {
+        throw std::runtime_error("parse json value fail");
+      }
+      models.emplace_back()=std::get<0>(res);
+    }
+    
+
+  } catch (const std::exception &e) {
+    std::cerr << "Error: " << e.what() << std::endl;
+  }
+  return models;
+}
+void tag_invoke(const value_from_tag &, value &jv,
+                std::vector<NAssist::GSoVITSModel> const &models) {
+
+  boost::json::array arr;
+  for (const auto &model : models) {
+    auto res = std::get<0>(
+        NAssist::Serializer<NAssist::GSoVITSModel>().serializer(model));
+    arr.push_back(res);
+  }
+  jv = arr;
+}
 void tag_invoke(const value_from_tag &, value &jv,
                 NAssist::GSoVITSRequestBody const &request) {
   // Store the IP address as a 4-element array of octets

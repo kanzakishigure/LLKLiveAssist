@@ -18,6 +18,7 @@ class GSoVITSAssist : public PluginBase {
 public:
   virtual void init() override;
   virtual std::error_code start() override;
+  virtual std::error_code stop() override;
   virtual void shutdown() override;
   
 
@@ -29,8 +30,12 @@ public:
   void pushAudioStream(std::vector<uint8_t> bytes);
   std::vector<uint8_t> popAudioSteam();
 
-  GSoVITSModel getGSoVITSModel() { return m_GSoVITSModel; }
-  void setGSoVITSModel(GSoVITSModel model) { m_GSoVITSModel = model; }
+  std::vector<GSoVITSModel> getGSoVITSModels() { return m_GSoVITSModels; }
+  void setGSoVITSModels(std::vector<GSoVITSModel> model) { m_GSoVITSModels = model; }
+  void setDefaultModel(size_t index) {
+    if (index >= 0 && index < m_GSoVITSModels.size())
+      m_RequestGSoVITSModel = m_GSoVITSModels[index];
+  }
 
 private:
   bool m_stoped = true;
@@ -40,7 +45,8 @@ private:
   std::mutex m_audio_mutex;
   std::condition_variable m_msg_condition;
 
-  GSoVITSModel m_GSoVITSModel;
+  GSoVITSModel m_RequestGSoVITSModel;
+  std::vector<GSoVITSModel> m_GSoVITSModels;
   GSoVITSRequestBody m_request_body;
 
   std::queue<std::string> m_msg_queue;

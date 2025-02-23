@@ -27,7 +27,10 @@ std::error_code ModuleManager::startAllModule() {
 }
 void ModuleManager::stopAllModule() {
   for (const auto &plugin : m_plugins) {
-    plugin->shutdown();
+
+    auto ec = plugin->stop();
+    if(ec)
+    CORE_ERROR("module stop error : {}",ec.message());
   }
 }
 
@@ -47,7 +50,8 @@ bool ModuleManager::startModule(PluginType type) {
 bool ModuleManager::stopModule(PluginType type) {
   for (const auto &plugin : m_plugins) {
     if (plugin->getStaticType() == type) {
-      plugin->shutdown();
+      auto ec = plugin->stop();
+      if(!ec)
       return true;
     }
   }
@@ -58,5 +62,6 @@ void ModuleManager::shutdown() {
   for (const auto &plugin : m_plugins) {
     plugin->shutdown();
   }
+  m_plugins.clear();
 }
 } // namespace NAssist

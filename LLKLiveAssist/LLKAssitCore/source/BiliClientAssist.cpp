@@ -1,6 +1,13 @@
 #include "BiliClientAssist.h"
 #include <chrono>
 
+#include "Core/ErrorCode.h"
+#include "Core/logger.h"
+#include "Data/ProtoPacket.h"
+#include "GSoVITSAssist.h"
+#include "ModuleManager.h"
+#include <exception>
+#include <filesystem>
 #include <format>
 #include <functional>
 #include <map>
@@ -8,12 +15,9 @@
 #include <random>
 #include <sstream>
 #include <string>
+#include <system_error>
 #include <thread>
 
-#include "Core/logger.h"
-#include "Data/ProtoPacket.h"
-#include "GSoVITSAssist.h"
-#include "ModuleManager.h"
 
 #include <boost/asio.hpp>
 
@@ -49,9 +53,24 @@ void BiliClientAssist::init() {
   m_AccessKey = "BP2Yl3cBDNc225qmrK53Fsyv";
   m_AccessKeySecret = "idiGra89obnAzmlZNjWRnw9jDi6vY6";
   m_AppId = "1739800103262";
-  m_Code = "ECXQ2PEZ63289";
+  m_Code = "xxxxxxxxx";
 
   // SetConsoleOutputCP(CP_UTF8);
+
+  if (std::filesystem::exists(BILI_CONFIG_PATH)) {
+    std::ifstream istream(BILI_CONFIG_PATH);
+    using Iterator = std::istreambuf_iterator<char>;
+    std::string content(Iterator{istream}, Iterator{});
+    istream.close();
+
+    if (!content.empty()) {
+      auto jv = boost::json::parse(content);
+      if (!jv.is_null())
+        if (!jv.at("uid").is_null()) {
+          m_Code = jv.at("uid").as_string();
+        }
+    }
+  }
 
   app_heart_periodic_task = std::make_shared<PeriodicTask>(
       [this]() {
@@ -69,6 +88,26 @@ void BiliClientAssist::init() {
 }
 void BiliClientAssist::shutdown() {
 
+  auto ec = stop();
+
+  if (std::filesystem::exists(BILI_CONFIG_PATH)) {
+    std::ofstream ostream(BILI_CONFIG_PATH);
+
+    if (!ostream) {
+      CORE_ERROR_TAG("BiliClientAssist", "保存UID : {} 失败", BILI_CONFIG_PATH);
+      return;
+    }
+    size_t index = 0;
+
+    std::string json_str = std::format("{{\"{0}\":\"{1}\"}}", "uid", m_Code);
+
+    CORE_INFO_TAG("BiliClientAssist", "保存UID :\n {} ", json_str);
+    ostream << json_str;
+    ostream.close();
+  }
+  CORE_INFO_TAG("BiliClient", "BiliClientAssist shutdown");
+}
+std::error_code BiliClientAssist::stop() {
   if (msgthread.joinable()) {
     m_stoped.set_value();
 
@@ -84,15 +123,18 @@ void BiliClientAssist::shutdown() {
   if (gamethread.joinable()) {
     gamethread.join();
   }
-  CORE_INFO_TAG("BiliClient", "BiliClientAssist shutdown");
+  CORE_INFO_TAG("BiliClient", "BiliClientAssist stop");
+  return make_error_code(bili_client_errc::success);
 }
 
 std::error_code BiliClientAssist::start() {
 
   CORE_INFO_TAG("BiliClient", "BiliClientAssist start");
   StartInteractivePlay();
-  AuthWebsocket();
-
+  auto res = AuthWebsocket();
+  if (res) {
+    return res;
+  }
   appthread = std::thread([this]() { app_heart_periodic_task->Start(); });
   gamethread = std::thread([this]() { game_heart_periodic_task->Start(); });
 
@@ -205,7 +247,7 @@ boost::json::value BiliClientAssist::RequestWebUTF8(
   return result;
 }
 
-void BiliClientAssist::AuthWebsocket() {
+std::error_code BiliClientAssist::AuthWebsocket() {
   ProtoPacket packet;
   packet.header.packet_length = m_AppStartInfo.WebsocketInfo.AuthBody.size() +
                                 packet.header.header_length;
@@ -217,6 +259,9 @@ void BiliClientAssist::AuthWebsocket() {
                            m_AppStartInfo.WebsocketInfo.AuthBody.end());
   std::vector<uint8_t> bytes = ProtoPacket2bytes(packet);
 
+  if (m_AppStartInfo.WebsocketInfo.WssLink.empty()) {
+    return make_error_code(bili_client_errc::auth_websocket_fail);
+  }
   m_bili_websocket = AsyncWebsocketClient::Create(
       m_AppStartInfo.WebsocketInfo.WssLink.front());
 
@@ -242,6 +287,7 @@ void BiliClientAssist::AuthWebsocket() {
   });
 
   m_bili_websocket->CommitAsyncTask();
+  return make_error_code(bili_client_errc::success);
 }
 
 void BiliClientAssist::HeartBeatWebsocketClient() {

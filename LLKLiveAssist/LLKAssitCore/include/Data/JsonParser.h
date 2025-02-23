@@ -11,6 +11,7 @@
 #include <system_error>
 #include <type_traits>
 #include <variant>
+#include <vector>
 
 namespace NAssist {
 
@@ -62,6 +63,15 @@ namespace boost::json {
 NAssist::GSoVITSModel
 tag_invoke(const boost::json::value_to_tag<NAssist::GSoVITSModel> &,
            boost::json::value const &jv);
+void tag_invoke(const value_from_tag &, value &jv,
+NAssist::GSoVITSModel const &model);
+
+std::vector<NAssist::GSoVITSModel>
+tag_invoke(const boost::json::value_to_tag<std::vector<NAssist::GSoVITSModel>> &,
+  boost::json::value const &jv);
+void tag_invoke(const value_from_tag &, value &jv,
+  std::vector<NAssist::GSoVITSModel> const &models);
+
 }
 
 namespace boost::json {
