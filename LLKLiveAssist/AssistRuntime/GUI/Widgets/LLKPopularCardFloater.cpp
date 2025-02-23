@@ -8,6 +8,7 @@
 #include <QSlider.h>
 #include <cstddef>
 #include <qboxlayout.h>
+#include <qcolor.h>
 #include <qcoreevent.h>
 #include <qlayoutitem.h>
 #include <qnamespace.h>
@@ -263,7 +264,8 @@ void LLKPopularCardFloater::paintEvent(QPaintEvent *event) {
   painter.setBrush(ElaThemeColor(_themeMode, DialogBase));
   if(_card->getSelected())
   {
-    painter.setBrush(QColor(115,124,123,255));
+    QColor back_color = _themeMode ==ElaThemeType::ThemeMode::Dark ? QColor(115,124,123,255) : QColor(240,245,229,255);
+    painter.setBrush(back_color);
   }
   painter.drawRoundedRect(foregroundRect, _cardPrivate->_pBorderRadius,
                           _cardPrivate->_pBorderRadius);

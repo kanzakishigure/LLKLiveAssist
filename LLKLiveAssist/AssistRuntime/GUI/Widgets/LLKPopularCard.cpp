@@ -175,9 +175,8 @@ void LLKPopularCard::paintEvent(QPaintEvent *event) {
   if(getSelected())
   {
     
-    auto brush_color = QColor(196,215,214,160);
-    
-    painter.setBrush(brush_color);
+    auto back_corlor = d->_themeMode ==ElaThemeType::ThemeMode::Dark ? QColor(196,215,214,160) : QColor(223,236,213,160);
+    painter.setBrush(back_corlor);
     
     painter.drawRoundedRect(foregroundRect, d->_pBorderRadius, d->_pBorderRadius);
 
