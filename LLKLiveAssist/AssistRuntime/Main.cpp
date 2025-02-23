@@ -5,6 +5,7 @@
 
 #include <QApplication>
 #include <QScreen>
+#include <filesystem>
 
 #include "ElaApplication.h"
 #include "GUI/AssistRuntimeWindow.h"
@@ -28,7 +29,9 @@ int Main(int argc, char **argv) {
   qputenv("QT_SCALE_FACTOR", "1.5");
 #endif
 #endif
-
+#ifdef LLK_WORK_SPACE
+  std::filesystem::current_path(LLK_WORK_SPACE);
+#endif
   LLKLogger::instance()->init();
   // init the AssistCore
   AssistRuntime instance;

@@ -29,6 +29,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   target_compile_definitions(${TARGET_NAME} PRIVATE MODEL_CONFIG_PATH="${LLKLiveAssist_ROOT_DIR}/Config/Model/ModelSetting.json")
   target_compile_definitions(${TARGET_NAME} PRIVATE BILI_CONFIG_PATH="${LLKLiveAssist_ROOT_DIR}/Config/BiliClientAssistSetting.json")
   target_compile_definitions(${TARGET_NAME} PRIVATE LLKDebug)
+  target_compile_definitions(${TARGET_NAME} PUBLIC LLK_WORK_SPACE="${LLKLiveAssist_ROOT_DIR}")
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
 
   target_compile_definitions(${TARGET_NAME} PRIVATE GPT_SOVITS_ROOT="GSoVITSCore/GPT-SoVITS-v2/")

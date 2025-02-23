@@ -23,6 +23,9 @@ enum class gpt_sovits_errc {
   success = 0,
   gsovist_not_found,
   gsovist_process_dump,
+  sovist_model_path_invalid,
+  gpt_model_path_invalid,
+  ref_audio_path_invalid
 };
 std::error_code make_error_code(gpt_sovits_errc ec);
 

@@ -145,23 +145,64 @@ std::error_code GSoVITSAssist::start() {
   {
     std::shared_ptr<HttpRequest> request = HttpRequest::CreateRequest(
         request_url, set_gpt_weights_endpoint, HttpRequestMethod::get);
+    
+    std::filesystem::path path = m_RequestGSoVITSModel.gpt_weights;
+    if(path.is_relative())
+    {
+      std::error_code ec ;
+      path = std::filesystem::absolute(path);
+      path  = std::filesystem::canonical(path,ec);
+      if(ec)
+      {
+        CORE_ERROR_TAG("GSoVITSAssist", "gpt_model_path :{{}} invalid",path.generic_string());
+        return make_error_code(gpt_sovits_errc::gpt_model_path_invalid );
+      }
+    }
     request->AddRequestParameter("weights_path",
-                                 m_RequestGSoVITSModel.gpt_weights);
+      path.generic_string());
     CORE_INFO_TAG("GSoVITSAssist", "set_gpt_weights :{}", request->Receive());
   }
 
   {
     std::shared_ptr<HttpRequest> request = HttpRequest::CreateRequest(
         request_url, set_sovits_weights_endpoint, HttpRequestMethod::get);
+
+
+    std::filesystem::path path = m_RequestGSoVITSModel.sovits_weights;
+    if(path.is_relative())
+    {
+      std::error_code ec ;
+      path = std::filesystem::absolute(path);
+      path = std::filesystem::canonical(path,ec);
+      if(ec)
+      {
+        CORE_ERROR_TAG("GSoVITSAssist", "sovist_model_path :{{}} invalid",path.generic_string());
+        return make_error_code(gpt_sovits_errc::sovist_model_path_invalid );
+      }
+    }
     request->AddRequestParameter("weights_path",
-                                 m_RequestGSoVITSModel.sovits_weights);
+      path.generic_string());
 
     CORE_INFO_TAG("GSoVITSAssist", "set_sovits_weights :{}",
                   request->Receive());
   }
   // generate request body use data from model
   m_request_body.text_lang = "zh";
-  m_request_body.ref_audio_path = m_RequestGSoVITSModel.ref_audio_path;
+
+  std::filesystem::path ref_audio_path = m_RequestGSoVITSModel.ref_audio_path;
+  if(ref_audio_path.is_relative())
+  {
+    std::error_code ec ;
+    ref_audio_path = std::filesystem::absolute(ref_audio_path);
+    ref_audio_path = std::filesystem::canonical(ref_audio_path,ec);
+    if(ec)
+    {
+      CORE_ERROR_TAG("GSoVITSAssist", "ref_audio_path :{{}} invalid",ref_audio_path.generic_string());
+      return make_error_code(gpt_sovits_errc::ref_audio_path_invalid);
+    }
+
+  }
+  m_request_body.ref_audio_path = ref_audio_path.generic_string();
   m_request_body.prompt_text = m_RequestGSoVITSModel.prompt_text;
   m_request_body.prompt_lang = m_RequestGSoVITSModel.prompt_lang;
 

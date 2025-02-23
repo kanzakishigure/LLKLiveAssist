@@ -70,6 +70,12 @@ std::error_code make_error_code(gpt_sovits_errc ec) {
         return "gpt-sovits 路径错误或未安装GPT-Sovits";
       case NAssist::gpt_sovits_errc::gsovist_process_dump:
         return "结束 gpt-sovits 进程失败";
+      case NAssist::gpt_sovits_errc::sovist_model_path_invalid:
+        return "sovist模型 路径不存在";
+      case NAssist::gpt_sovits_errc::gpt_model_path_invalid:
+        return "gpt模型 路径不存在";
+      case NAssist::gpt_sovits_errc::ref_audio_path_invalid:
+        return "参考语音 文件路径不存在";
       default:
         return "undefined error";
       }
