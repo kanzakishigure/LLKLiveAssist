@@ -36,6 +36,9 @@ public:
     if (index >= 0 && index < m_GSoVITSModels.size())
       m_RequestGSoVITSModel = m_GSoVITSModels[index];
   }
+  GSoVITSModel getDefaultModel() const{
+      return m_RequestGSoVITSModel;
+  }
 
 private:
   bool m_stoped = true;

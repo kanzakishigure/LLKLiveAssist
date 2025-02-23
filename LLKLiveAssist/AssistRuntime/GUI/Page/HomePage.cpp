@@ -13,6 +13,7 @@
 #include <qchar.h>
 #include <qglobal.h>
 #include <qnamespace.h>
+#include <qobjectdefs.h>
 #include <qpushbutton.h>
 #include <qwidget.h>
 #include <system_error>
@@ -41,14 +42,18 @@
 #include "ElaToggleButton.h"
 #include "ElaToggleSwitch.h"
 #include "ElaToolTip.h"
+#include "GSoVITSAssist.h"
 #include "GUI/Widgets/LLKPopularCard.h"
 #include <ModuleManager.h>
+#include <vector>
 
 #include "Runtime/AssistRuntime.h"
 
 namespace NAssist {
 
 HomePage::HomePage(QWidget *parent) : BasePage(parent) {
+  
+////////////////////////////////////////////////////////////////////////////////////
   // 预览窗口标题
   setWindowTitle("Home");
 
@@ -517,11 +522,27 @@ void HomePage::flushModelCard(const std::vector<GSoVITSModel>& sovits_models)
     }
     delete item;
   }
-  auto create_model_card = [this](size_t index,GSoVITSModel model){
+
+  auto defualt_model = ModuleManager::getInstance()
+  .getModule<GSoVITSAssist>()
+  ->getDefaultModel();
+  auto create_model_card = [this,defualt_model](size_t index,GSoVITSModel model){
     LLKPopularCard* model_card = new LLKPopularCard(this);
+    
   connect(model_card, &LLKPopularCard::popularCardButtonClicked, this, [=]() {
     ModuleManager::getInstance().getModule<GSoVITSAssist>()->setDefaultModel(index);
-    GUI_INFO("LLKPopularCard index {} is clicked", index );
+    model_card->setSelected(true);
+    GUI_INFO("model {} is selected", model.model_name );
+    for(size_t i=0;i<model_card_flow_layout->count();i++)
+    {
+      auto* item = model_card_flow_layout->itemAt(i);
+      if(QWidget* widget = item->widget())
+      {
+        static_cast<LLKPopularCard*>(widget)->setSelected(i==index);
+      }
+    }
+    
+  
   });
   model_card->setCardPixmap(QPixmap(model.model_img.c_str()));
   model_card->setTitle(model.model_name.c_str());
@@ -529,6 +550,7 @@ void HomePage::flushModelCard(const std::vector<GSoVITSModel>& sovits_models)
   model_card->setDetailedText(model.model_description.c_str());
   model_card->setInteractiveTips(model.model_category.c_str());
   model_card->setCardButtontext("启用");
+  model_card->setSelected(model==defualt_model);
   model_card_flow_layout->addWidget(model_card);
 
 

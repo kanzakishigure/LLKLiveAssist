@@ -238,7 +238,7 @@ void GSoVITSAssist::shutdown() {
     size_t index = 0;
     for (auto &model : m_GSoVITSModels) {
 
-      if (m_RequestGSoVITSModel.model_name == model.model_name) {
+      if (m_RequestGSoVITSModel == model) {
         break;
       }
       index++;

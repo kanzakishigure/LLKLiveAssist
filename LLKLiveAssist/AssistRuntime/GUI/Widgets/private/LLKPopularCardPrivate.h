@@ -12,6 +12,7 @@ class LLKPopularCardFloater;
 class LLKPopularCardPrivate : public QObject {
   Q_OBJECT
   Q_D_CREATE(LLKPopularCard)
+  Q_PROPERTY_CREATE_D(bool, Selected)
   Q_PROPERTY_CREATE_D(int, BorderRadius)
   Q_PROPERTY_CREATE_D(QPixmap, CardPixmap)
   Q_PROPERTY_CREATE_D(QString, Title)

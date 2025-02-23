@@ -16,14 +16,13 @@ namespace NAssist {
 class HomePage : public BasePage {
   Q_OBJECT
 public:
-
   Q_INVOKABLE explicit HomePage(QWidget *parent = nullptr);
   ~HomePage();
 Q_SIGNALS:
   Q_SIGNAL void llkModelNavigation();
 
 public:
-  void flushModelCard(const std::vector<GSoVITSModel>& sovits_models);
+  Q_INVOKABLE void flushModelCard(const std::vector<GSoVITSModel>& sovits_models);
   void onGSoVITSModelChanged();
 
 protected:

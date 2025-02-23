@@ -258,8 +258,13 @@ void LLKPopularCardFloater::paintEvent(QPaintEvent *event) {
 
   // 背景绘制
   painter.setOpacity(1);
+ 
   painter.setPen(ElaThemeColor(_themeMode, PopupBorderHover));
   painter.setBrush(ElaThemeColor(_themeMode, DialogBase));
+  if(_card->getSelected())
+  {
+    painter.setBrush(QColor(115,124,123,255));
+  }
   painter.drawRoundedRect(foregroundRect, _cardPrivate->_pBorderRadius,
                           _cardPrivate->_pBorderRadius);
   painter.setClipRect(foregroundRect);

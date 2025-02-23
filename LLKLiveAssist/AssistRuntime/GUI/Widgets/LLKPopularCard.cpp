@@ -10,6 +10,7 @@
 #include "ElaTheme.h"
 #include "LLKPopularCardFloater.h"
 #include "GUI/Widgets//private/LLKPopularCardPrivate.h"
+#include <qcolor.h>
 #include <qglobal.h>
 
 namespace NAssist {
@@ -32,6 +33,7 @@ LLKPopularCard::LLKPopularCard(QWidget *parent)
   d->_pBorderRadius = 8;
   d->_pHoverYOffset = 0;
   d->_pHoverOpacity = 0;
+  d->_pSelected = false;
   setObjectName("LLKPopularCard");
   setStyleSheet("#LLKPopularCard{background-color:transparent}");
   setMouseTracking(true);
@@ -61,11 +63,25 @@ void LLKPopularCard::setCardButtontext(QString cardButtonText)
     d->_floater->_overButton->setText(d->_pCardButtontext);
     Q_EMIT pCardButtontextChanged();
 }
+
 QString LLKPopularCard::getCardButtontext() const {
   Q_D(const LLKPopularCard);
   return d->_pCardButtontext;
 }
-
+void LLKPopularCard::setSelected(bool selected)
+{
+    Q_D(LLKPopularCard);
+    d->_pSelected = selected;
+    d->_floater->_overButton->setDisabled(selected);
+    update();
+    d->_floater->update();
+    Q_EMIT pSelectedChanged();
+}
+bool LLKPopularCard::getSelected() const 
+{
+    Q_D(const LLKPopularCard);
+    return d->_pSelected;
+}
 void LLKPopularCard::setCardFloatArea(QWidget *floatArea) {
   Q_D(LLKPopularCard);
   if (!floatArea || floatArea == this) {
@@ -155,9 +171,24 @@ void LLKPopularCard::paintEvent(QPaintEvent *event) {
   // 背景绘制
   painter.setOpacity(1);
   painter.setPen(underMouse() ? ElaThemeColor(d->_themeMode, PopupBorderHover)
-                              : ElaThemeColor(d->_themeMode, BasicBorder));
-  painter.setBrush(ElaThemeColor(d->_themeMode, BasicBaseAlpha));
-  painter.drawRoundedRect(foregroundRect, d->_pBorderRadius, d->_pBorderRadius);
+    : ElaThemeColor(d->_themeMode, BasicBorder));
+  if(getSelected())
+  {
+    
+    auto brush_color = QColor(196,215,214,160);
+    
+    painter.setBrush(brush_color);
+    
+    painter.drawRoundedRect(foregroundRect, d->_pBorderRadius, d->_pBorderRadius);
+
+  }
+  else {
+   
+    painter.setBrush(ElaThemeColor(d->_themeMode, BasicBaseAlpha));
+   
+    painter.drawRoundedRect(foregroundRect, d->_pBorderRadius, d->_pBorderRadius);
+  }
+  
   // 图片绘制
   painter.save();
   QRectF pixRect(foregroundRect.x() + foregroundRect.height() * 0.15,

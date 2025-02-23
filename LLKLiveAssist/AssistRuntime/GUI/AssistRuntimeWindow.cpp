@@ -70,6 +70,11 @@ AssistRuntimeWindow::AssistRuntimeWindow(QWidget *parent) : ElaWindow(parent) {
 
 void AssistRuntimeWindow::initWindow() {
 
+  ///////////////////////////////////////////////////////////////////////////////////////////////
+  //注册自定义类型
+  ///////////////////////////////////////////////////////////////////////////////////////////////
+  qRegisterMetaType<std::vector<GSoVITSModel>>("std::vector<GSoVITSModel>");
+  ///////////////////////////////////////////////////////////////////////////////////////////////
   QApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
   QFontDatabase::addApplicationFont(":/Resource/Font/ElaAwesome.ttf");
   QFontDatabase::addApplicationFont(":/Resource/Font/Roboto.ttf");

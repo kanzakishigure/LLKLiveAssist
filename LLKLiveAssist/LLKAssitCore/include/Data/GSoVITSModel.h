@@ -22,6 +22,18 @@ struct GSoVITSModel : public Serializeable {
   std::string prompt_lang;
   std::string ref_audio_path;
   std::string model_description;
+ bool operator ==(const GSoVITSModel& other) const
+ {
+    auto result = other.model_name == model_name&&
+    other.model_author==model_author&&
+    other.model_img ==model_img&&
+    other.model_category==model_category&&
+    other.model_description==model_description&&
+    other.prompt_lang==prompt_lang&&
+    other.prompt_text==prompt_text&&
+    other.ref_audio_path==ref_audio_path;
+    return result;
+ }
 };
 
 struct GSoVITSRequestBody : public Serializeable {

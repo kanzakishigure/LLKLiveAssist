@@ -11,6 +11,7 @@ class LLKPopularCard : public QWidget
 {
     Q_OBJECT
     Q_Q_CREATE(LLKPopularCard)
+    Q_PROPERTY_CREATE_Q_H(bool, Selected)
     Q_PROPERTY_CREATE_Q_H(int, BorderRadius)
     Q_PROPERTY_CREATE_Q_H(QPixmap, CardPixmap)
     Q_PROPERTY_CREATE_Q_H(QString, Title)
