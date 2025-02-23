@@ -7,9 +7,17 @@
 #include <QPainter>
 #include <QTimer>
 #include <QVBoxLayout>
+#include <cstddef>
+#include <filesystem>
+#include <format>
+#include <qchar.h>
+#include <qglobal.h>
 #include <qnamespace.h>
+#include <qpushbutton.h>
+#include <qwidget.h>
 #include <system_error>
 
+#include "Data/GSoVITSModel.h"
 #include "Def.h"
 #include "ElaAcrylicUrlCard.h"
 #include "ElaCheckBox.h"
@@ -33,7 +41,7 @@
 #include "ElaToggleButton.h"
 #include "ElaToggleSwitch.h"
 #include "ElaToolTip.h"
-
+#include "GUI/Widgets/LLKPopularCard.h"
 #include <ModuleManager.h>
 
 #include "Runtime/AssistRuntime.h"
@@ -79,6 +87,9 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
   urlCard1ToolTip->setToolTip(
       "https://github.com/kanzakishigure/LLKLiveAssist");
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+//toggleSwitch to setup LLK Assist Core
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
   ElaToggleSwitch *start_toggleSwitch = new ElaToggleSwitch(this);
   ElaScrollPageArea *start_toggleSwitchArea = new ElaScrollPageArea(this);
   start_toggleSwitchArea->setFixedWidth(280);
@@ -101,8 +112,8 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
               ModuleManager::getInstance().getModule<AudioAssist>();
           auto sovits_assist =
               ModuleManager::getInstance().getModule<GSoVITSAssist>();
-          audio_assist->setAudioConfig(audio_config_data);
-          sovits_assist->setGSoVITSModel(sovits_config_data);
+          audio_assist->setAudioConfig(m_audio_config_data);
+          sovits_assist->setGSoVITSModels(m_sovits_models);
           // code in another thread
           AssistRuntime::getInstance()->stratAllModule(
               [start_toggleSwitch,
@@ -145,7 +156,9 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
           start_toggleSwitch->setDisabled(true);
         }
       });
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+//github ulr card for llk live assist
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
   ElaScrollArea *cardScrollArea = new ElaScrollArea(this);
   cardScrollArea->setWidgetResizable(true);
   cardScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -172,9 +185,9 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
   backgroundLayout->setContentsMargins(0, 0, 0, 0);
   backgroundLayout->addLayout(titleLayout);
   backgroundLayout->addWidget(cardScrollArea);
-
-  // 推荐卡片
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // plugings config
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
   ElaText *flowText = new ElaText("LLK Core plugings", this);
   flowText->setTextPixelSize(20);
   QHBoxLayout *flowTextLayout = new QHBoxLayout();
@@ -186,7 +199,9 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
   ElaFlowLayout *flowLayout = new ElaFlowLayout(0, 5, 5);
   flowLayout->setContentsMargins(30, 0, 0, 0);
   flowLayout->setIsAnimation(true);
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // llk core config pivot 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   QVBoxLayout *pivotLayout = new QVBoxLayout();
   pivotLayout->setContentsMargins(30, 0, 0, 0);
   ElaScrollPageArea *pivotArea = new ElaScrollPageArea(this);
@@ -203,8 +218,11 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
   pivotLayout->addWidget(pivotArea);
 
 
-  int line_editor_hight = 35;
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // biliconfig
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  int line_editor_hight = 35;
   QWidget *bili_config = new QWidget(this);
   QVBoxLayout *bili_config_layout = new QVBoxLayout();
   bili_config->setLayout(bili_config_layout);
@@ -259,8 +277,9 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
                       .c_str();
     });
   }
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // sovist config
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   QWidget *sovits_config = new QWidget(this);
   QVBoxLayout *sovits_config_layout = new QVBoxLayout();
   sovits_config->setLayout(sovits_config_layout);
@@ -276,48 +295,22 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
 
     sovits_config_layout->setSpacing(10);
     sovits_config_layout->addWidget(sovits_config_title);
-
-    sovits_config_data = ModuleManager::getInstance()
+    
+    auto *model_card_flow_area = new QWidget(this);
+    model_card_flow_layout = new ElaFlowLayout(model_card_flow_area);
+    
+    sovits_config_layout->addWidget(model_card_flow_area);
+    m_sovits_models = ModuleManager::getInstance()
                              .getModule<GSoVITSAssist>()
-                             ->getGSoVITSModel();
+                             ->getGSoVITSModels();
 
-    auto create_line_editor =
-        [this, sovits_config_layout](std::string propety_name,
-                                     std::string propety_value,
-                                     int height,
-                                     int width) {
-          auto propety_value_line_edit = new ElaLineEdit(this);
-          propety_value_line_edit->setText(propety_value.c_str());
-          propety_value_line_edit->setFixedHeight(height);
-          propety_value_line_edit->setFixedWidth(width);
-          propety_value_line_edit->setAlignment(Qt::AlignVCenter);
-          ElaScrollPageArea *textbox_area = new ElaScrollPageArea(this);
-          QHBoxLayout *texbox_area_Layout = new QHBoxLayout(textbox_area);
-          ElaText *propety_name_text = new ElaText(propety_name.c_str(), this);
-          propety_name_text->setTextPixelSize(15);
-          propety_name_text->setFixedWidth(120);
-          texbox_area_Layout->addWidget(propety_name_text);
-          texbox_area_Layout->addWidget(propety_value_line_edit);
-          texbox_area_Layout->addStretch();
-
-          connect(propety_value_line_edit, &ElaLineEdit::focusOut, this,
-                  [=](QString text) {
-
-                  });
-
-          sovits_config_layout->addSpacing(10);
-          sovits_config_layout->addWidget(textbox_area);
-        };
-
-    create_line_editor("model_name", sovits_config_data.model_name,line_editor_hight,80);
-    create_line_editor("sovits_weights", sovits_config_data.sovits_weights,line_editor_hight,150);
-    create_line_editor("gpt_weights", sovits_config_data.gpt_weights,line_editor_hight,150);
-    create_line_editor("ref_audio_path", sovits_config_data.ref_audio_path,line_editor_hight,150);
-    create_line_editor("prompt_text", sovits_config_data.prompt_text,line_editor_hight,150);
-    create_line_editor("prompt_lang", sovits_config_data.prompt_lang,line_editor_hight,80);
+    flushModelCard(m_sovits_models);                          
+   
+    
   }
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // audio config
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   QWidget *audio_config = new QWidget(this);
   QVBoxLayout *audio_config_layout = new QVBoxLayout();
   audio_config->setLayout(audio_config_layout);
@@ -337,12 +330,12 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
     int DcoderSampleRate = 16000;
     int AudioSampleRate = 16000;
 
-    audio_config_data =
+    m_audio_config_data =
         ModuleManager::getInstance().getModule<AudioAssist>()->getAudioConfig();
 
     {
       QString propety_name = "Dcoderformat";
-      ma_format format = audio_config_data.Dcoderformat;
+      ma_format format = m_audio_config_data.Dcoderformat;
 
       m_comboBox = new ElaComboBox(this);
       QStringList comboList{
@@ -362,11 +355,11 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
 
       connect(m_comboBox, QOverload<int>::of(&ElaComboBox::activated), this,
               [this](int index) {
-                audio_config_data.Dcoderformat =
+                m_audio_config_data.Dcoderformat =
                     static_cast<ma_format>(index + 1);
                 auto audio_assist =
                     ModuleManager::getInstance().getModule<AudioAssist>();
-                audio_assist->setAudioConfig(audio_config_data);
+                audio_assist->setAudioConfig(m_audio_config_data);
               });
 
       audio_config_layout->addSpacing(10);
@@ -374,7 +367,7 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
     }
     {
       QString propety_name = "DcoderSampleRate";
-      int propety_value = audio_config_data.DcoderSampleRate;
+      int propety_value = m_audio_config_data.DcoderSampleRate;
       auto propety_value_line_edit = new ElaLineEdit(this);
       propety_value_line_edit->setText(QString::number(propety_value));
       propety_value_line_edit->setValidator(new QIntValidator());
@@ -393,10 +386,10 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
 
       connect(propety_value_line_edit, &ElaLineEdit::focusOut, this,
               [this](QString text) {
-                audio_config_data.DcoderSampleRate = text.toInt();
+                m_audio_config_data.DcoderSampleRate = text.toInt();
                 auto audio_assist =
                     ModuleManager::getInstance().getModule<AudioAssist>();
-                audio_assist->setAudioConfig(audio_config_data);
+                audio_assist->setAudioConfig(m_audio_config_data);
               });
 
       audio_config_layout->addSpacing(10);
@@ -405,7 +398,7 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
 
     {
       QString propety_name = "AudioSampleRate";
-      int propety_value = audio_config_data.AudioSampleRate;
+      int propety_value = m_audio_config_data.AudioSampleRate;
       auto propety_value_line_edit = new ElaLineEdit(this);
       propety_value_line_edit->setText(QString::number(propety_value));
       propety_value_line_edit->setValidator(new QIntValidator());
@@ -425,17 +418,17 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
 
       connect(propety_value_line_edit, &ElaLineEdit::focusOut, this,
               [this](QString text) {
-                audio_config_data.DcoderSampleRate = text.toInt();
+                m_audio_config_data.DcoderSampleRate = text.toInt();
                 auto audio_assist =
                     ModuleManager::getInstance().getModule<AudioAssist>();
-                audio_assist->setAudioConfig(audio_config_data);
+                audio_assist->setAudioConfig(m_audio_config_data);
               });
 
       audio_config_layout->addSpacing(10);
       audio_config_layout->addWidget(textbox_area);
     }
   }
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // 菜单
   _homeMenu = new ElaMenu(this);
 
@@ -514,6 +507,36 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
 
 HomePage::~HomePage() {}
 
+void HomePage::flushModelCard(const std::vector<GSoVITSModel>& sovits_models)
+{
+  while(auto* item =  model_card_flow_layout->takeAt(0))
+  {
+    if(QWidget* widget = item->widget())
+    {
+      widget->deleteLater();
+    }
+    delete item;
+  }
+  auto create_model_card = [this](size_t index,GSoVITSModel model){
+    LLKPopularCard* model_card = new LLKPopularCard(this);
+  connect(model_card, &LLKPopularCard::popularCardButtonClicked, this, [=]() {
+    ModuleManager::getInstance().getModule<GSoVITSAssist>()->setDefaultModel(index);
+    GUI_INFO("LLKPopularCard index {} is clicked", index );
+  });
+  model_card->setCardPixmap(QPixmap(model.model_img.c_str()));
+  model_card->setTitle(model.model_name.c_str());
+  model_card->setSubTitle(fmt::format("Author : {0}",model.model_author).c_str());
+  model_card->setDetailedText(model.model_description.c_str());
+  model_card->setInteractiveTips(model.model_category.c_str());
+  model_card->setCardButtontext("启用");
+  model_card_flow_layout->addWidget(model_card);
+
+
+  };
+  for (size_t index = 0; index<sovits_models.size(); index++) {
+  create_model_card(index,sovits_models[index]);
+  }
+}
 void HomePage::mouseReleaseEvent(QMouseEvent *event) {
   switch (event->button()) {
   case Qt::RightButton: {
@@ -530,4 +553,12 @@ void HomePage::mouseReleaseEvent(QMouseEvent *event) {
   }
   ElaScrollPage::mouseReleaseEvent(event);
 }
+void HomePage::onGSoVITSModelChanged() {
+  m_sovits_models = ModuleManager::getInstance()
+                        .getModule<GSoVITSAssist>()
+                        ->getGSoVITSModels();
+
+  flushModelCard(m_sovits_models);
+}
+
 } // namespace NAssist

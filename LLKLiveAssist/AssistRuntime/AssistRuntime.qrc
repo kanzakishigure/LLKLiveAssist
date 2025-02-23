@@ -109,6 +109,8 @@
         <file>Resource/Image/LLK.png</file>
         <file>Resource/Image/github.png</file>
         <file>Resource/Image/Home_Background.png</file>
+        <file>Resource/Image/Home_Background_Dark.png</file>
+        <file>Resource/Image/rushmy.png</file>
         
     </qresource>
 </RCC>

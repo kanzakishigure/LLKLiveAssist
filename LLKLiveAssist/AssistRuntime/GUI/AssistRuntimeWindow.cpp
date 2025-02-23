@@ -31,7 +31,8 @@
 #include "ElaToolButton.h"
 
 #include "Page/HomePage.h"
-#include "Page/LogWidget.h"
+#include "Page/ModelPage.h"
+#include "Widgets/LogWidget.h"
 #include "Page/SettingPage.h"
 
 
@@ -90,7 +91,7 @@ void AssistRuntimeWindow::initWindow() {
   // setIsNavigationBarEnable(false);
   // setNavigationBarDisplayMode(ElaNavigationType::Compact);
   // setWindowButtonFlag(ElaAppBarType::MinimizeButtonHint, false);
-  setUserInfoCardPixmap(QPixmap(":/Resource/Image/LLK.jpg"));
+  setUserInfoCardPixmap(QPixmap(":/Resource/Image/LLK.png"));
   setUserInfoCardTitle("LLK Assist");
   setUserInfoCardSubTitle("基于Soviet的弹幕姬");
   setWindowTitle("LLK Assist");
@@ -130,8 +131,20 @@ void AssistRuntimeWindow::initContent() {
 
   m_homePage = new HomePage(this);
   addPageNode("HOME", m_homePage, ElaIconType::House);
-  m_settingPage = new SettingPage(this );
-  addFooterNode("Setting", m_settingPage, m_settingKey, 0, ElaIconType::GearComplex);
+  m_modelPage = new ModelPage(this);
+  addPageNode("Model", m_modelPage, ElaIconType::DiceD12);
+  m_settingPage = new SettingPage(this);
+  addFooterNode("Setting", m_settingPage, m_settingKey, 0,
+                ElaIconType::GearComplex);
+
+  connect(this, &AssistRuntimeWindow::userInfoCardClicked, this, [=]() {
+    this->navigation(m_homePage->property("ElaPageKey").toString());
+  });
+  connect(m_homePage, &HomePage::llkModelNavigation, this, [=]() {
+    this->navigation(m_modelPage->property("ElaPageKey").toString());
+  });
+  connect(m_modelPage, &ModelPage::gSovitsmodelChanged, m_homePage,&HomePage::onGSoVITSModelChanged);
+  qDebug() << ElaEventBus::getInstance()->getRegisteredEventsName();
 }
 
 } // namespace NAssist

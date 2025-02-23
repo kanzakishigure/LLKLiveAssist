@@ -43,8 +43,8 @@ void AssistRuntime::init() {
 
 }
 void AssistRuntime::shutdown() {
-  // Shutdown the assist core
- ModuleManager::getInstance().shutdown();
+
+
  
  //join main therad
  if (m_core_thread.joinable())

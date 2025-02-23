@@ -2,6 +2,7 @@
 
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <qchar.h>
 
 #include "ElaMenu.h"
 #include "ElaText.h"

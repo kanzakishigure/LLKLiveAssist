@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ElaScrollPage.h>
+#include <qchar.h>
 class QVBoxLayout;
 namespace NAssist {
 
@@ -11,6 +12,6 @@ public:
   ~BasePage();
 
 protected:
-  void createCustomWidget(QString desText);
+  virtual void createCustomWidget(QString desText);
 };
 } // namespace NAssist

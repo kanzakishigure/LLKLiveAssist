@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ElaWindow.h"
+#include "Page/ModelPage.h"
 #include "Page/SettingPage.h"
 
 #include <QMainWindow>
@@ -25,6 +26,7 @@ private:
   // ela widget
   ElaContentDialog *m_closeDialog{nullptr};
   HomePage *m_homePage{nullptr};
+  ModelPage* m_modelPage{nullptr};
   SettingPage *m_settingPage{nullptr};
   
   QWidget *m_CentralWidget;

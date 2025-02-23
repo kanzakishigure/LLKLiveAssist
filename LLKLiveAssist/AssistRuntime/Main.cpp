@@ -1,5 +1,6 @@
 
 #include "GUI/AssistRuntimeWindow.h"
+#include "ModuleManager.h"
 #include "Runtime/AssistRuntime.h"
 
 #include <QApplication>
@@ -39,6 +40,7 @@ int Main(int argc, char **argv) {
   AssistRuntimeWindow w;
   w.show();
   auto exit_code = app.exec();
+  ModuleManager::getInstance().shutdown();
   LLKLogger::instance()->shutdown();
   return exit_code;
 }
