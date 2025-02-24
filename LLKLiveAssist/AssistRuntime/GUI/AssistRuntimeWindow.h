@@ -26,9 +26,9 @@ private:
   // ela widget
   ElaContentDialog *m_closeDialog{nullptr};
   HomePage *m_homePage{nullptr};
-  ModelPage* m_modelPage{nullptr};
+  ModelPage *m_modelPage{nullptr};
   SettingPage *m_settingPage{nullptr};
-  
+
   QWidget *m_CentralWidget;
   QString m_settingKey;
 };

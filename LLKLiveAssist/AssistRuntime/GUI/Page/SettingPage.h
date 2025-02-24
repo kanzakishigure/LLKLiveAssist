@@ -3,7 +3,6 @@
 #include <QWidget>
 #include <qobjectdefs.h>
 
-
 class ElaRadioButton;
 class ElaToggleSwitch;
 class ElaComboBox;

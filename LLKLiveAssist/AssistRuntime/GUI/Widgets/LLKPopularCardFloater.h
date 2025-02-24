@@ -40,8 +40,7 @@ private:
   LLKPopularCardPrivate *_cardPrivate{nullptr};
   QRect _calculateTargetGeometry(QRect cardGeometry);
   int _floatGeometryOffset{25};
-  QVBoxLayout* floater_layout;
-  ElaScrollArea* floater_scroll_area;
-  
+  QVBoxLayout *floater_layout;
+  ElaScrollArea *floater_scroll_area;
 };
 } // namespace NAssist

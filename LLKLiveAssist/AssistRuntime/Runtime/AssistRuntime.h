@@ -2,14 +2,15 @@
 #include "ModuleManager.h"
 #include "PluginBase.h"
 
-#include <thread>
 #include <functional>
+#include <thread>
+
 namespace NAssist {
 class AssistRuntime {
 public:
   AssistRuntime();
-  ~AssistRuntime() ;
-  
+  ~AssistRuntime();
+
   void init();
   void shutdown();
 
@@ -19,11 +20,11 @@ public:
   void stopAllModule();
   void stopAllModule(std::function<void(const std::error_code ec)> callback);
 
-  static NAssist::AssistRuntime* getInstance(){return instance;} 
+  static NAssist::AssistRuntime *getInstance() { return instance; }
+
 private:
-  static NAssist::AssistRuntime* instance;
+  static NAssist::AssistRuntime *instance;
 
   std::thread m_core_thread;
-  
 };
 } // namespace NAssist

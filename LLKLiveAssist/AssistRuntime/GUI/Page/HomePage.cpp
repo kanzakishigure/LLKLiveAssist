@@ -52,8 +52,8 @@
 namespace NAssist {
 
 HomePage::HomePage(QWidget *parent) : BasePage(parent) {
-  
-////////////////////////////////////////////////////////////////////////////////////
+
+  ////////////////////////////////////////////////////////////////////////////////////
   // 预览窗口标题
   setWindowTitle("Home");
 
@@ -92,9 +92,9 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
   urlCard1ToolTip->setToolTip(
       "https://github.com/kanzakishigure/LLKLiveAssist");
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-//toggleSwitch to setup LLK Assist Core
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // toggleSwitch to setup LLK Assist Core
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////
   ElaToggleSwitch *start_toggleSwitch = new ElaToggleSwitch(this);
   ElaScrollPageArea *start_toggleSwitchArea = new ElaScrollPageArea(this);
   start_toggleSwitchArea->setFixedWidth(280);
@@ -161,9 +161,9 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
           start_toggleSwitch->setDisabled(true);
         }
       });
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-//github ulr card for llk live assist
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // github ulr card for llk live assist
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////
   ElaScrollArea *cardScrollArea = new ElaScrollArea(this);
   cardScrollArea->setWidgetResizable(true);
   cardScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -190,9 +190,9 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
   backgroundLayout->setContentsMargins(0, 0, 0, 0);
   backgroundLayout->addLayout(titleLayout);
   backgroundLayout->addWidget(cardScrollArea);
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////
   // plugings config
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////
   ElaText *flowText = new ElaText("LLK Core plugings", this);
   flowText->setTextPixelSize(20);
   QHBoxLayout *flowTextLayout = new QHBoxLayout();
@@ -204,9 +204,9 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
   ElaFlowLayout *flowLayout = new ElaFlowLayout(0, 5, 5);
   flowLayout->setContentsMargins(30, 0, 0, 0);
   flowLayout->setIsAnimation(true);
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // llk core config pivot 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // llk core config pivot
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   QVBoxLayout *pivotLayout = new QVBoxLayout();
   pivotLayout->setContentsMargins(30, 0, 0, 0);
   ElaScrollPageArea *pivotArea = new ElaScrollPageArea(this);
@@ -222,11 +222,9 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
   pivotAreaLayout->addWidget(m_pivot);
   pivotLayout->addWidget(pivotArea);
 
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // biliconfig
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   int line_editor_hight = 35;
   QWidget *bili_config = new QWidget(this);
   QVBoxLayout *bili_config_layout = new QVBoxLayout();
@@ -252,13 +250,13 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
     QHBoxLayout *uid_texbox_area_Layout = new QHBoxLayout(uid_textbox_area);
     ElaText *toggleButtonText = new ElaText("用户身份码：", this);
     toggleButtonText->setTextPixelSize(15);
-    
+
     uid_texbox_area_Layout->addWidget(toggleButtonText);
     uid_texbox_area_Layout->addWidget(uid_line_edit);
     uid_texbox_area_Layout->addStretch();
 
     ElaPushButton *push_button = new ElaPushButton("获取身份码", this);
-    
+
     connect(push_button, &ElaPushButton::pressed, this, [=]() {
       QDesktopServices::openUrl(QUrl("https://play-live.bilibili.com/"));
     });
@@ -282,9 +280,9 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
                       .c_str();
     });
   }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // sovist config
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   QWidget *sovits_config = new QWidget(this);
   QVBoxLayout *sovits_config_layout = new QVBoxLayout();
   sovits_config->setLayout(sovits_config_layout);
@@ -300,22 +298,20 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
 
     sovits_config_layout->setSpacing(10);
     sovits_config_layout->addWidget(sovits_config_title);
-    
+
     auto *model_card_flow_area = new QWidget(this);
     model_card_flow_layout = new ElaFlowLayout(model_card_flow_area);
-    
+
     sovits_config_layout->addWidget(model_card_flow_area);
     m_sovits_models = ModuleManager::getInstance()
-                             .getModule<GSoVITSAssist>()
-                             ->getGSoVITSModels();
+                          .getModule<GSoVITSAssist>()
+                          ->getGSoVITSModels();
 
-    flushModelCard(m_sovits_models);                          
-   
-    
+    flushModelCard(m_sovits_models);
   }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // audio config
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   QWidget *audio_config = new QWidget(this);
   QVBoxLayout *audio_config_layout = new QVBoxLayout();
   audio_config->setLayout(audio_config_layout);
@@ -417,7 +413,7 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
       propety_name_text->setTextPixelSize(15);
       propety_name_text->setFixedWidth(150);
       texbox_area_Layout->addWidget(propety_name_text);
-      
+
       texbox_area_Layout->addWidget(propety_value_line_edit);
       texbox_area_Layout->addStretch();
 
@@ -433,7 +429,7 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
       audio_config_layout->addWidget(textbox_area);
     }
   }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // 菜单
   _homeMenu = new ElaMenu(this);
 
@@ -512,51 +508,45 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
 
 HomePage::~HomePage() {}
 
-void HomePage::flushModelCard(const std::vector<GSoVITSModel>& sovits_models)
-{
-  while(auto* item =  model_card_flow_layout->takeAt(0))
-  {
-    if(QWidget* widget = item->widget())
-    {
+void HomePage::flushModelCard(const std::vector<GSoVITSModel> &sovits_models) {
+  while (auto *item = model_card_flow_layout->takeAt(0)) {
+    if (QWidget *widget = item->widget()) {
       widget->deleteLater();
     }
     delete item;
   }
 
   auto defualt_model = ModuleManager::getInstance()
-  .getModule<GSoVITSAssist>()
-  ->getDefaultModel();
-  auto create_model_card = [this,defualt_model](size_t index,GSoVITSModel model){
-    LLKPopularCard* model_card = new LLKPopularCard(this);
-    
-  connect(model_card, &LLKPopularCard::popularCardButtonClicked, this, [=]() {
-    ModuleManager::getInstance().getModule<GSoVITSAssist>()->setDefaultModel(index);
-    model_card->setSelected(true);
-    GUI_INFO("model {} is selected", model.model_name );
-    for(size_t i=0;i<model_card_flow_layout->count();i++)
-    {
-      auto* item = model_card_flow_layout->itemAt(i);
-      if(QWidget* widget = item->widget())
-      {
-        static_cast<LLKPopularCard*>(widget)->setSelected(i==index);
+                           .getModule<GSoVITSAssist>()
+                           ->getDefaultModel();
+  auto create_model_card = [this, defualt_model](size_t index,
+                                                 GSoVITSModel model) {
+    LLKPopularCard *model_card = new LLKPopularCard(this);
+
+    connect(model_card, &LLKPopularCard::popularCardButtonClicked, this, [=]() {
+      ModuleManager::getInstance().getModule<GSoVITSAssist>()->setDefaultModel(
+          index);
+      model_card->setSelected(true);
+      GUI_INFO("model {} is selected", model.model_name);
+      for (size_t i = 0; i < model_card_flow_layout->count(); i++) {
+        auto *item = model_card_flow_layout->itemAt(i);
+        if (QWidget *widget = item->widget()) {
+          static_cast<LLKPopularCard *>(widget)->setSelected(i == index);
+        }
       }
-    }
-    
-  
-  });
-  model_card->setCardPixmap(QPixmap(model.model_img.c_str()));
-  model_card->setTitle(model.model_name.c_str());
-  model_card->setSubTitle(fmt::format("Author : {0}",model.model_author).c_str());
-  model_card->setDetailedText(model.model_description.c_str());
-  model_card->setInteractiveTips(model.model_category.c_str());
-  model_card->setCardButtontext("启用");
-  model_card->setSelected(model==defualt_model);
-  model_card_flow_layout->addWidget(model_card);
-
-
+    });
+    model_card->setCardPixmap(QPixmap(model.model_img.c_str()));
+    model_card->setTitle(model.model_name.c_str());
+    model_card->setSubTitle(
+        fmt::format("Author : {0}", model.model_author).c_str());
+    model_card->setDetailedText(model.model_description.c_str());
+    model_card->setInteractiveTips(model.model_category.c_str());
+    model_card->setCardButtontext("启用");
+    model_card->setSelected(model == defualt_model);
+    model_card_flow_layout->addWidget(model_card);
   };
-  for (size_t index = 0; index<sovits_models.size(); index++) {
-  create_model_card(index,sovits_models[index]);
+  for (size_t index = 0; index < sovits_models.size(); index++) {
+    create_model_card(index, sovits_models[index]);
   }
 }
 void HomePage::mouseReleaseEvent(QMouseEvent *event) {

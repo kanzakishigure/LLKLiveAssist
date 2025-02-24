@@ -34,37 +34,34 @@
 namespace NAssist {
 
 void ModelConfigContainer::checkPath(std::filesystem::path path) {
-  for (const auto& entry : std::filesystem::directory_iterator(path)) {
-    if(entry.is_directory())
-    {
+  for (const auto &entry : std::filesystem::directory_iterator(path)) {
+    if (entry.is_directory()) {
       checkPath(entry.path());
-    }
-    else if (entry.is_regular_file()) {
+    } else if (entry.is_regular_file()) {
 
-      GUI_INFO( "  Type: {0}, Size: {1} bytes",entry.path().extension().string(),entry.file_size());
+      GUI_INFO("  Type: {0}, Size: {1} bytes",
+               entry.path().extension().string(), entry.file_size());
     }
 
-    if(entry.path().extension()==".jpg"||entry.path().extension()==".png")
-    {
+    if (entry.path().extension() == ".jpg" ||
+        entry.path().extension() == ".png") {
       setmodel_img_path(entry.path().string().c_str());
-      Q_EMIT valuechanged("model_img_path",entry.path().string().c_str());
+      Q_EMIT valuechanged("model_img_path", entry.path().string().c_str());
     }
-    if(entry.path().extension()==".pth")
-    {
+    if (entry.path().extension() == ".pth") {
       setsovits_weights(entry.path().string().c_str());
-      Q_EMIT valuechanged("sovits_weights",entry.path().string().c_str());
+      Q_EMIT valuechanged("sovits_weights", entry.path().string().c_str());
     }
-    if(entry.path().extension()==".ckpt")
-    {
+    if (entry.path().extension() == ".ckpt") {
       setgpt_weights(entry.path().string().c_str());
-      Q_EMIT valuechanged("gpt_weights",entry.path().string().c_str());
+      Q_EMIT valuechanged("gpt_weights", entry.path().string().c_str());
     }
-    if(entry.path().extension()==".wav")
-    {
+    if (entry.path().extension() == ".wav") {
       setref_audio_path(entry.path().string().c_str());
-      setprompt_text(entry.path().filename().string().c_str() );
-      Q_EMIT valuechanged("ref_audio_path",entry.path().string().c_str());
-      Q_EMIT valuechanged("prompt_text",entry.path().filename().string().c_str());
+      setprompt_text(entry.path().filename().string().c_str());
+      Q_EMIT valuechanged("ref_audio_path", entry.path().string().c_str());
+      Q_EMIT valuechanged("prompt_text",
+                          entry.path().filename().string().c_str());
     }
   }
 }
@@ -141,12 +138,12 @@ ModelConfigContainer::ModelConfigContainer(QWidget *parent) : QWidget(parent) {
         this->setmodel_img_path(path.string().c_str());
       });
       connect(this, &ModelConfigContainer::valuechanged,
-        [=](QString name,QString value) { 
-          if("model_img_path"==name){
-            setmodel_img_path(value);
-            icon_image->setPixmap(value);
-          }
-        });
+              [=](QString name, QString value) {
+                if ("model_img_path" == name) {
+                  setmodel_img_path(value);
+                  icon_image->setPixmap(value);
+                }
+              });
       property_area_layout->addWidget(icon_image, 0, 0);
       property_area_layout->addWidget(author_property, 0, 1);
       property_area_layout->addWidget(name_property, 1, 0);
@@ -185,11 +182,10 @@ ModelConfigContainer::ModelConfigContainer(QWidget *parent) : QWidget(parent) {
     scoll_content_laytout->addWidget(detail_area);
     scoll_content_laytout->addSpacing(20);
 
-    
     connect(file_icon_button, &ElaToolButton::clicked, [this](bool checked) {
       auto path = FileSystem::OpenFolderDialog();
       checkPath(path);
-      });
+    });
     auto create_line_edit_property =
         [this](QString property_name, std::function<void(QString)> bindfunc) {
           ElaScrollPageArea *property_set_area = new ElaScrollPageArea(this);
@@ -208,11 +204,11 @@ ModelConfigContainer::ModelConfigContainer(QWidget *parent) : QWidget(parent) {
                   [this, bindfunc](QString text) { bindfunc(text); });
 
           connect(this, &ModelConfigContainer::valuechanged,
-                    [=](QString name,QString text) { 
-                      if(property_name==name)
+                  [=](QString name, QString text) {
+                    if (property_name == name)
                       property_edit->setText(text);
-                     });
-       
+                  });
+
           return property_set_area;
         };
 
@@ -234,10 +230,10 @@ ModelConfigContainer::ModelConfigContainer(QWidget *parent) : QWidget(parent) {
                     bindfunc(property_text_edit);
                   });
           connect(this, &ModelConfigContainer::valuechanged,
-            [=](QString name,QString text) { 
-              if(property_name==name)
-              property_text_edit->setPlainText(text);
-              });
+                  [=](QString name, QString text) {
+                    if (property_name == name)
+                      property_text_edit->setPlainText(text);
+                  });
           return property_set_area;
         };
 

@@ -22,7 +22,7 @@ class LLKPopularCardPrivate : public QObject {
   Q_PROPERTY_CREATE_D(QString, CardButtontext)
   Q_PROPERTY_CREATE_D(QWidget *, CardFloatArea)
   Q_PROPERTY_CREATE_D(QPixmap, CardFloatPixmap)
-  Q_PROPERTY_CREATE_D(ElaSlider*, CardTemperatureSlider)
+  Q_PROPERTY_CREATE_D(ElaSlider *, CardTemperatureSlider)
   Q_PROPERTY_CREATE(qreal, HoverYOffset);
   Q_PROPERTY_CREATE(qreal, HoverOpacity);
 

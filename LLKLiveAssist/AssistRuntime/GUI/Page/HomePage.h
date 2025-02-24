@@ -22,19 +22,19 @@ Q_SIGNALS:
   Q_SIGNAL void llkModelNavigation();
 
 public:
-  Q_INVOKABLE void flushModelCard(const std::vector<GSoVITSModel>& sovits_models);
+  Q_INVOKABLE void
+  flushModelCard(const std::vector<GSoVITSModel> &sovits_models);
   void onGSoVITSModelChanged();
 
 protected:
   virtual void mouseReleaseEvent(QMouseEvent *event);
 
-  
 private:
   ElaMenu *_homeMenu{nullptr};
   ElaPivot *m_pivot{nullptr};
   ElaComboBox *m_comboBox{nullptr};
-  ElaFlowLayout* model_card_flow_layout{nullptr};
-  
+  ElaFlowLayout *model_card_flow_layout{nullptr};
+
   std::vector<GSoVITSModel> m_sovits_models;
   AudioConfig m_audio_config_data;
 };

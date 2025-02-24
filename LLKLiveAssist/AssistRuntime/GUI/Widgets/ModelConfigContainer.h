@@ -1,13 +1,14 @@
 #pragma once
 
+#include "Data/GSoVITSModel.h"
 #include "Def.h"
 #include "ElaPlainTextEdit.h"
-#include "Data/GSoVITSModel.h"
 #include <QWidget>
 #include <filesystem>
 #include <qchar.h>
 #include <qpixmap.h>
 #include <qwidget.h>
+
 
 class ElaImageCard;
 namespace NAssist {
@@ -28,15 +29,16 @@ class ModelConfigContainer : public QWidget {
 public:
   explicit ModelConfigContainer(QWidget *parent = nullptr);
   ~ModelConfigContainer();
-  signals:
-void valuechanged(QString property_name,QString text);
+signals:
+  void valuechanged(QString property_name, QString text);
+
 protected:
 private:
-void checkPath(std::filesystem::path path);
+  void checkPath(std::filesystem::path path);
+
 private:
   ElaThemeType::ThemeMode _themeMode;
   QString _themeCard;
-  ElaImageCard* m_header_area;
-
+  ElaImageCard *m_header_area;
 };
 } // namespace NAssist

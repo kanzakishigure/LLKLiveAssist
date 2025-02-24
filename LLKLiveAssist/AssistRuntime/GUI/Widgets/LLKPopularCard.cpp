@@ -8,23 +8,22 @@
 #include "ElaPushButton.h"
 #include "ElaSlider.h"
 #include "ElaTheme.h"
-#include "LLKPopularCardFloater.h"
 #include "GUI/Widgets//private/LLKPopularCardPrivate.h"
+#include "LLKPopularCardFloater.h"
 #include <qcolor.h>
 #include <qglobal.h>
 
-namespace NAssist {
-    Q_PROPERTY_CREATE_Q_CPP(LLKPopularCard, int, BorderRadius)
-    Q_PROPERTY_CREATE_Q_CPP(LLKPopularCard, QPixmap, CardPixmap)
-    Q_PROPERTY_CREATE_Q_CPP(LLKPopularCard, QString, Title)
-    Q_PROPERTY_CREATE_Q_CPP(LLKPopularCard, QString, SubTitle)
-    Q_PROPERTY_CREATE_Q_CPP(LLKPopularCard, QString, InteractiveTips)
-    Q_PROPERTY_CREATE_Q_CPP(LLKPopularCard, QString, DetailedText)
-    Q_PROPERTY_CREATE_Q_CPP(LLKPopularCard, QPixmap, CardFloatPixmap)
-    Q_PROPERTY_CREATE_Q_CPP(LLKPopularCard, ElaSlider*, CardTemperatureSlider)
-    
 
-    
+namespace NAssist {
+Q_PROPERTY_CREATE_Q_CPP(LLKPopularCard, int, BorderRadius)
+Q_PROPERTY_CREATE_Q_CPP(LLKPopularCard, QPixmap, CardPixmap)
+Q_PROPERTY_CREATE_Q_CPP(LLKPopularCard, QString, Title)
+Q_PROPERTY_CREATE_Q_CPP(LLKPopularCard, QString, SubTitle)
+Q_PROPERTY_CREATE_Q_CPP(LLKPopularCard, QString, InteractiveTips)
+Q_PROPERTY_CREATE_Q_CPP(LLKPopularCard, QString, DetailedText)
+Q_PROPERTY_CREATE_Q_CPP(LLKPopularCard, QPixmap, CardFloatPixmap)
+Q_PROPERTY_CREATE_Q_CPP(LLKPopularCard, ElaSlider *, CardTemperatureSlider)
+
 LLKPopularCard::LLKPopularCard(QWidget *parent)
     : QWidget{parent}, d_ptr(new LLKPopularCardPrivate()) {
   Q_D(LLKPopularCard);
@@ -51,36 +50,31 @@ LLKPopularCard::LLKPopularCard(QWidget *parent)
 }
 LLKPopularCard::~LLKPopularCard() {}
 
-
-void LLKPopularCard::setCardButtontext(QString cardButtonText)
-{
-    Q_D(LLKPopularCard);
-    if (cardButtonText.isEmpty())
-    {
-        return;
-    }
-    d->_pCardButtontext = cardButtonText;
-    d->_floater->_overButton->setText(d->_pCardButtontext);
-    Q_EMIT pCardButtontextChanged();
+void LLKPopularCard::setCardButtontext(QString cardButtonText) {
+  Q_D(LLKPopularCard);
+  if (cardButtonText.isEmpty()) {
+    return;
+  }
+  d->_pCardButtontext = cardButtonText;
+  d->_floater->_overButton->setText(d->_pCardButtontext);
+  Q_EMIT pCardButtontextChanged();
 }
 
 QString LLKPopularCard::getCardButtontext() const {
   Q_D(const LLKPopularCard);
   return d->_pCardButtontext;
 }
-void LLKPopularCard::setSelected(bool selected)
-{
-    Q_D(LLKPopularCard);
-    d->_pSelected = selected;
-    d->_floater->_overButton->setDisabled(selected);
-    update();
-    d->_floater->update();
-    Q_EMIT pSelectedChanged();
+void LLKPopularCard::setSelected(bool selected) {
+  Q_D(LLKPopularCard);
+  d->_pSelected = selected;
+  d->_floater->_overButton->setDisabled(selected);
+  update();
+  d->_floater->update();
+  Q_EMIT pSelectedChanged();
 }
-bool LLKPopularCard::getSelected() const 
-{
-    Q_D(const LLKPopularCard);
-    return d->_pSelected;
+bool LLKPopularCard::getSelected() const {
+  Q_D(const LLKPopularCard);
+  return d->_pSelected;
 }
 void LLKPopularCard::setCardFloatArea(QWidget *floatArea) {
   Q_D(LLKPopularCard);
@@ -171,23 +165,25 @@ void LLKPopularCard::paintEvent(QPaintEvent *event) {
   // 背景绘制
   painter.setOpacity(1);
   painter.setPen(underMouse() ? ElaThemeColor(d->_themeMode, PopupBorderHover)
-    : ElaThemeColor(d->_themeMode, BasicBorder));
-  if(getSelected())
-  {
-    
-    auto back_corlor = d->_themeMode ==ElaThemeType::ThemeMode::Dark ? QColor(196,215,214,160) : QColor(223,236,213,160);
-    painter.setBrush(back_corlor);
-    
-    painter.drawRoundedRect(foregroundRect, d->_pBorderRadius, d->_pBorderRadius);
+                              : ElaThemeColor(d->_themeMode, BasicBorder));
+  if (getSelected()) {
 
-  }
-  else {
-   
+    auto back_corlor = d->_themeMode == ElaThemeType::ThemeMode::Dark
+                           ? QColor(196, 215, 214, 160)
+                           : QColor(223, 236, 213, 160);
+    painter.setBrush(back_corlor);
+
+    painter.drawRoundedRect(foregroundRect, d->_pBorderRadius,
+                            d->_pBorderRadius);
+
+  } else {
+
     painter.setBrush(ElaThemeColor(d->_themeMode, BasicBaseAlpha));
-   
-    painter.drawRoundedRect(foregroundRect, d->_pBorderRadius, d->_pBorderRadius);
+
+    painter.drawRoundedRect(foregroundRect, d->_pBorderRadius,
+                            d->_pBorderRadius);
   }
-  
+
   // 图片绘制
   painter.save();
   QRectF pixRect(foregroundRect.x() + foregroundRect.height() * 0.15,

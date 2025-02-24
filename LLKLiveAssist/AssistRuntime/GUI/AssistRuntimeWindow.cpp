@@ -32,13 +32,13 @@
 
 #include "Page/HomePage.h"
 #include "Page/ModelPage.h"
+#include "Page/SettingPage.h"
 #include "Widgets/LogWidget.h"
-#include "Page/SettingPage.h"
-
 
 #include "Page/SettingPage.h"
-#include "spdlog/spdlog.h"
 #include "spdlog/sinks/qt_sinks.h"
+#include "spdlog/spdlog.h"
+
 namespace NAssist {
 
 AssistRuntimeWindow::AssistRuntimeWindow(QWidget *parent) : ElaWindow(parent) {
@@ -71,7 +71,7 @@ AssistRuntimeWindow::AssistRuntimeWindow(QWidget *parent) : ElaWindow(parent) {
 void AssistRuntimeWindow::initWindow() {
 
   ///////////////////////////////////////////////////////////////////////////////////////////////
-  //注册自定义类型
+  // 注册自定义类型
   ///////////////////////////////////////////////////////////////////////////////////////////////
   qRegisterMetaType<std::vector<GSoVITSModel>>("std::vector<GSoVITSModel>");
   ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -79,11 +79,11 @@ void AssistRuntimeWindow::initWindow() {
   QFontDatabase::addApplicationFont(":/Resource/Font/ElaAwesome.ttf");
   QFontDatabase::addApplicationFont(":/Resource/Font/Roboto.ttf");
   QFontDatabase::addApplicationFont(":/Resource/Font/PingFang-SC-Regular.ttf");
-  //默认字体
+  // 默认字体
   QFont font = qApp->font();
   font.setPixelSize(13);
   font.setFamily("Roboto");
-  
+
   font.setHintingPreference(QFont::PreferNoHinting);
   qApp->setFont(font);
 
@@ -102,8 +102,6 @@ void AssistRuntimeWindow::initWindow() {
   setWindowTitle("LLK Assist");
   // setIsStayTop(true);
   // setUserInfoCardVisible(false);
-
-  
 }
 
 void AssistRuntimeWindow::initEdgeLayout() {
@@ -119,17 +117,18 @@ void AssistRuntimeWindow::initEdgeLayout() {
   logDockWidget->setWidget(new LogWidget(this));
   this->addDockWidget(Qt::RightDockWidgetArea, logDockWidget);
   resizeDocks({logDockWidget}, {200}, Qt::Horizontal);
-  
+
   */
 
-  ElaDockWidget* log_dock_widget = new ElaDockWidget("日志信息", this);
-  QPlainTextEdit* log_editor = new ElaPlainTextEdit(this);
+  ElaDockWidget *log_dock_widget = new ElaDockWidget("日志信息", this);
+  QPlainTextEdit *log_editor = new ElaPlainTextEdit(this);
   log_editor->setReadOnly(true);
   log_dock_widget->setWidget(log_editor);
-    this->addDockWidget(Qt::BottomDockWidgetArea, log_dock_widget);
-    resizeDocks({log_dock_widget}, {300}, Qt::Horizontal);
-    LLKLogger::instance()->addLogger(spdlog::qt_logger_mt("qt_logger", log_editor), LLKLogger::Type::GUI);
-    GUI_INFO("LLKLogger init success");
+  this->addDockWidget(Qt::BottomDockWidgetArea, log_dock_widget);
+  resizeDocks({log_dock_widget}, {300}, Qt::Horizontal);
+  LLKLogger::instance()->addLogger(
+      spdlog::qt_logger_mt("qt_logger", log_editor), LLKLogger::Type::GUI);
+  GUI_INFO("LLKLogger init success");
 }
 
 void AssistRuntimeWindow::initContent() {
@@ -148,7 +147,8 @@ void AssistRuntimeWindow::initContent() {
   connect(m_homePage, &HomePage::llkModelNavigation, this, [=]() {
     this->navigation(m_modelPage->property("ElaPageKey").toString());
   });
-  connect(m_modelPage, &ModelPage::gSovitsmodelChanged, m_homePage,&HomePage::onGSoVITSModelChanged);
+  connect(m_modelPage, &ModelPage::gSovitsmodelChanged, m_homePage,
+          &HomePage::onGSoVITSModelChanged);
   qDebug() << ElaEventBus::getInstance()->getRegisteredEventsName();
 }
 

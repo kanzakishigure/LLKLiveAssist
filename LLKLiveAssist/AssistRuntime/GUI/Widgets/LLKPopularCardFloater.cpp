@@ -23,7 +23,6 @@
 #include "GUI/Widgets/private/LLKPopularCardPrivate.h"
 #include "LLKPopularCard.h"
 
-
 #include "ElaPushButton.h"
 #include "ElaTheme.h"
 namespace NAssist {
@@ -68,15 +67,10 @@ LLKPopularCardFloater::LLKPopularCardFloater(LLKPopularCard *card,
           [=](ElaThemeType::ThemeMode themeMode) { _themeMode = themeMode; });
   setVisible(false);
 
-
-  floater_layout = new QVBoxLayout(this); 
+  floater_layout = new QVBoxLayout(this);
   floater_layout->addSpacing(150);
-  floater_layout->setContentsMargins(10,10,10,10);
-  
-  
-  
-  
-  
+  floater_layout->setContentsMargins(10, 10, 10, 10);
+
   floater_scroll_area = new ElaScrollArea(this);
   floater_scroll_area->setWidgetResizable(true);
   floater_scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -84,39 +78,33 @@ LLKPopularCardFloater::LLKPopularCardFloater(LLKPopularCard *card,
   floater_scroll_area->setIsGrabGesture(true, 0);
   floater_scroll_area->setIsOverShoot(Qt::Vertical, true);
 
-  QWidget* scroll_area_content = new QWidget(this);
+  QWidget *scroll_area_content = new QWidget(this);
   scroll_area_content->setStyleSheet("background-color:transparent;");
   floater_scroll_area->setWidget(scroll_area_content);
-  QVBoxLayout* floater_scroll_area_layout = new QVBoxLayout(scroll_area_content);
-  
-  
+  QVBoxLayout *floater_scroll_area_layout =
+      new QVBoxLayout(scroll_area_content);
+
   floater_scroll_area_layout->setContentsMargins(0, 0, 0, 0);
-  
+
   {
-    QWidget* temp_slider_area = new QWidget(this);
-    
-    auto* temp_slider_area_layout = new QHBoxLayout(temp_slider_area) ;
+    QWidget *temp_slider_area = new QWidget(this);
+
+    auto *temp_slider_area_layout = new QHBoxLayout(temp_slider_area);
 
     _cardPrivate->_pCardTemperatureSlider = new ElaSlider(this);
-    ElaText* text = new ElaText("模型情绪值",temp_slider_area);
+    ElaText *text = new ElaText("模型情绪值", temp_slider_area);
     text->setTextPixelSize(15);
     text->setFixedWidth(100);
     temp_slider_area_layout->addWidget(text);
     temp_slider_area_layout->setAlignment(Qt::AlignLeft);
     temp_slider_area_layout->addSpacing(10);
-    temp_slider_area_layout->addWidget( _cardPrivate->_pCardTemperatureSlider);
+    temp_slider_area_layout->addWidget(_cardPrivate->_pCardTemperatureSlider);
     _cardPrivate->_pCardTemperatureSlider->setFixedWidth(180);
-
 
     floater_scroll_area_layout->setSpacing(20);
     floater_scroll_area_layout->addWidget(temp_slider_area);
-
-
   }
   floater_layout->addWidget(floater_scroll_area);
- 
-
-  
 }
 
 LLKPopularCardFloater::~LLKPopularCardFloater() {}
@@ -259,12 +247,13 @@ void LLKPopularCardFloater::paintEvent(QPaintEvent *event) {
 
   // 背景绘制
   painter.setOpacity(1);
- 
+
   painter.setPen(ElaThemeColor(_themeMode, PopupBorderHover));
   painter.setBrush(ElaThemeColor(_themeMode, DialogBase));
-  if(_card->getSelected())
-  {
-    QColor back_color = _themeMode ==ElaThemeType::ThemeMode::Dark ? QColor(115,124,123,255) : QColor(240,245,229,255);
+  if (_card->getSelected()) {
+    QColor back_color = _themeMode == ElaThemeType::ThemeMode::Dark
+                            ? QColor(115, 124, 123, 255)
+                            : QColor(240, 245, 229, 255);
     painter.setBrush(back_color);
   }
   painter.drawRoundedRect(foregroundRect, _cardPrivate->_pBorderRadius,
@@ -332,7 +321,7 @@ void LLKPopularCardFloater::paintEvent(QPaintEvent *event) {
   QString detailedText = painter.fontMetrics().elidedText(
       _cardPrivate->_pDetailedText, Qt::ElideRight,
       detailedTextRect.width() * 1.9);
-  
+
   font.setPixelSize(15);
   font.setFamily("Roboto");
   painter.setFont(font);
@@ -345,7 +334,6 @@ void LLKPopularCardFloater::paintEvent(QPaintEvent *event) {
   painter.drawLine(foregroundRect.x(), detailedTextRect.bottom() + 5,
                    foregroundRect.right(), detailedTextRect.bottom() + 5);
 
-  
   painter.restore();
 }
 
