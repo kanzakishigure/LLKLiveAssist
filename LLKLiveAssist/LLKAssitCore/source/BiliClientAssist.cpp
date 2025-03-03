@@ -6,6 +6,7 @@
 #include "Data/ProtoPacket.h"
 #include "GSoVITSAssist.h"
 #include "ModuleManager.h"
+#include <cmath>
 #include <exception>
 #include <filesystem>
 #include <format>
@@ -22,8 +23,9 @@
 #include <boost/asio.hpp>
 
 namespace NAssist {
+const bool isTestEnv = false;
+static std::string OpenLiveDomain = isTestEnv ? "http://test-live-open.biliapi.net" : "https://live-open.biliapi.com";
 
-static std::string OpenLiveDomain = "https://live-open.biliapi.com";
 const std::string k_InteractivePlayStart = "/v2/app/start";
 const std::string k_InteractivePlayEnd = "/v2/app/end";
 const std::string k_InteractivePlayBatchHeartBeat = "/v2/app/batchHeartbeat";
@@ -297,7 +299,12 @@ void BiliClientAssist::HeartBeatWebsocketClient() {
   packet.header.version = ProtoVersion::HeartBeat;
   packet.header.sequence_id = 1;
   std::vector<uint8_t> bytes = ProtoPacket2bytes(packet);
-  m_bili_websocket->Send(bytes);
+  auto ec = m_bili_websocket->Send(bytes);
+  if(ec)
+  {
+    CORE_ERROR_TAG("","WebsocketClient HeartBeat fail : {}",ec.message());
+    return;
+  }
   CORE_TRACE_TAG("BiliClient", "game heartbeat success");
 }
 
@@ -315,19 +322,28 @@ void BiliClientAssist::WebsocketClientReceive() {
   m_bili_websocket->CommitAsyncTask();
 
 */
-  auto bytes = m_bili_websocket->Receive();
+  auto res = m_bili_websocket->Receive();
+  if(res.index()==1)
+  {
+    auto ec = std::get<1>(res);
+    CORE_ERROR_TAG("","WebsocketClient Receive fail : {}",ec.message());
+    return;
+  }
+  auto bytes = std::get<0>(res);
   if (bytes.empty())
     return;
   auto packet = bytes2ProtoPacket(bytes);
-  std::string result = std::string(packet.body.begin(), packet.body.end());
-
-  if (result.empty()) {
-    m_bili_websocket->CleanBuffer();
-    return;
-  }
+  
+  
 
   if (ProtoOperation::ServerNotify == packet.header.operation) {
-    auto json_value = boost::json::parse(result);
+    std::error_code ec;
+    std::string result = std::string(packet.body.begin(), packet.body.end());
+    auto json_value = boost::json::parse(result,ec);
+    if(ec){
+      CORE_ERROR_TAG("BiliClientAssist"," parse websocket respon fail : {}",result);
+      return;
+    }
     std::string cmd = json_value.at("cmd").as_string().c_str();
     BiliWebCMD bili_cmd = string2BiliWebCMD(cmd);
     switch (bili_cmd) {

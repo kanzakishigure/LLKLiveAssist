@@ -19,6 +19,8 @@
 #include <boost/asio/ssl/error.hpp>
 #include <boost/asio/ssl/stream.hpp>
 #include <boost/beast/ssl.hpp>
+#include <system_error>
+#include <variant>
 
 namespace NAssist {
 
@@ -99,8 +101,8 @@ public:
   void
   AsyncReceive(std::function<void(boost::beast::error_code, std::size_t)> func);
 
-  void Send(const std::vector<uint8_t> &data);
-  std::vector<uint8_t> Receive();
+  std::error_code Send(const std::vector<uint8_t> &data);
+  std::variant<std::vector<uint8_t>,std::error_code> Receive();
 
   void StartAsyncTask();
   void CommitAsyncTask();

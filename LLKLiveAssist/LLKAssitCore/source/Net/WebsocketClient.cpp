@@ -1,5 +1,6 @@
 #include "Net/WebsocketClient.h"
 #include "Core/logger.h"
+#include <boost/beast/core/error.hpp>
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
@@ -7,6 +8,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <system_error>
 #include <vector>
 
 namespace NAssist {
@@ -213,25 +215,31 @@ void AsyncWebsocketClient::AsyncReceive(
   m_async_stream.async_read(m_buffer, func);
 }
 
-void AsyncWebsocketClient::Send(const std::vector<uint8_t> &data) {
+std::error_code AsyncWebsocketClient::Send(const std::vector<uint8_t> &data) {
   size_t size = 0;
-  try {
-    size = m_async_stream.write(boost::asio::buffer(data));
-  } catch (const std::exception &e) {
-    std::cerr << "Error: " << e.what() << std::endl;
+  boost::beast::error_code ec;
+  m_async_stream.write(boost::asio::buffer(data),ec);
+  if(ec)
+  {
+    CORE_ERROR_TAG("AsyncWebsocketClient","Send fail : {}", ec.message());
   }
+  return ec;
 }
 
-std::vector<uint8_t> AsyncWebsocketClient::Receive() {
-  try {
+std::variant<std::vector<uint8_t>,std::error_code> AsyncWebsocketClient::Receive() {
+  
+  boost::beast::error_code ec;
     m_buffer.clear();
-    m_async_stream.read(m_buffer);
+    m_async_stream.read(m_buffer,ec);
+    if(ec)
+    {
+      CORE_ERROR_TAG("AsyncWebsocketClient","Receive fail : {}", ec.message());
+      return ec;
+    }
+    
     std::string data = boost::beast::buffers_to_string(m_buffer.data());
     return std::vector<uint8_t>(data.begin(), data.end());
-  } catch (const std::exception &e) {
-    std::cerr << "Error: " << e.what() << std::endl;
-  }
-  return {};
+ 
 }
 
 void AsyncWebsocketClient::StartAsyncTask() { m_io_ctx.run(); }
