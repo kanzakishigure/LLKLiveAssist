@@ -104,6 +104,7 @@ ModelConfigContainer::ModelConfigContainer(QWidget *parent) : QWidget(parent) {
       auto *property_area_layout = new QGridLayout(property_area);
 
       auto create_property = [this](QString property_name,
+                                    QString property_type,
                                     std::function<void(QString)> bindfunc) {
         QWidget *property_set_area = new QWidget(this);
         QHBoxLayout *property_set_area_layout =
@@ -117,18 +118,28 @@ ModelConfigContainer::ModelConfigContainer(QWidget *parent) : QWidget(parent) {
         property_set_area_layout->addWidget(property_edit);
         connect(property_edit, &ElaLineEdit::focusOut,
                 [bindfunc](QString text) { bindfunc(text); });
+
+        connect(this, &ModelConfigContainer::valuechanged,
+                [=](QString name, QString value) {
+                  if (property_type == name) {
+                    property_edit->setText(value);
+                  }
+                });
         return property_set_area;
       };
-      auto *name_property = create_property(
-          "Name : ", [this](QString text) { setmodel_name(text); });
-      auto *author_property = create_property(
-          "Author : ", [this](QString text) { setmodel_author(text); });
-      auto *category_property = create_property(
-          "Category : ", [this](QString text) { setmodel_category(text); });
+      auto *name_property =
+          create_property("Name : ", "model_name",
+                          [this](QString text) { setmodel_name(text); });
+      auto *author_property =
+          create_property("Author : ", "model_author",
+                          [this](QString text) { setmodel_author(text); });
+      auto *category_property =
+          create_property("Category : ", "model_category",
+                          [this](QString text) { setmodel_category(text); });
       // icon
 
       ElaIconButton *icon_image =
-          new ElaIconButton(QPixmap(":/Resource/Image/rushmy.png"), this);
+          new ElaIconButton(QPixmap(":/Resource/Image/model.png"), this);
       icon_image->setFixedSize(90, 90);
       connect(icon_image, &ElaIconButton::clicked, [this, icon_image]() {
         auto path = FileSystem::OpenFileDialog((HWND)(this->window()->winId()));
@@ -140,9 +151,11 @@ ModelConfigContainer::ModelConfigContainer(QWidget *parent) : QWidget(parent) {
       connect(this, &ModelConfigContainer::valuechanged,
               [=](QString name, QString value) {
                 if ("model_img_path" == name) {
-                  setmodel_img_path(value);
-                  icon_image->setPixmap(value);
+                  value.isEmpty() ? icon_image->setPixmap(
+                    QPixmap(":/Resource/Image/model.png").copy())
+                                  : icon_image->setPixmap(value);
                 }
+                GUI_INFO("model_img_path is {}",value.isEmpty());
               });
       property_area_layout->addWidget(icon_image, 0, 0);
       property_area_layout->addWidget(author_property, 0, 1);
@@ -179,10 +192,14 @@ ModelConfigContainer::ModelConfigContainer(QWidget *parent) : QWidget(parent) {
     detail_area_laytout->addWidget(detail_area_title);
     detail_area_laytout->addSpacing(30);
     detail_area_laytout->addWidget(file_icon_button);
+
     scoll_content_laytout->addWidget(detail_area);
+    ElaScrollPageArea* content_separator = new ElaScrollPageArea(this);
+    content_separator->setFixedHeight(3);
+    scoll_content_laytout->addWidget(content_separator);
     scoll_content_laytout->addSpacing(20);
 
-    connect(file_icon_button, &ElaToolButton::clicked, [this](bool checked) {
+    connect(file_icon_button, &ElaToolButton::clicked, [this]() {
       auto path = FileSystem::OpenFolderDialog();
       checkPath(path);
     });
@@ -216,7 +233,7 @@ ModelConfigContainer::ModelConfigContainer(QWidget *parent) : QWidget(parent) {
         [this](QString property_name,
                std::function<void(ElaPlainTextEdit *)> bindfunc) {
           ElaScrollPageArea *property_set_area = new ElaScrollPageArea(this);
-          property_set_area->setFixedHeight(300);
+          property_set_area->setFixedHeight(200);
           QVBoxLayout *property_set_area_layout =
               new QVBoxLayout(property_set_area);
           ElaText *property_text = new ElaText(property_name, this);
@@ -243,11 +260,13 @@ ModelConfigContainer::ModelConfigContainer(QWidget *parent) : QWidget(parent) {
         "gpt_weights", [this](QString text) { setgpt_weights(text); });
     auto *ref_audio_path = create_line_edit_property(
         "ref_audio_path", [this](QString text) { setref_audio_path(text); });
-    auto *prompt_text = create_line_edit_property(
-        "prompt_text", [this](QString text) { setprompt_text(text); });
+
     auto *prompt_lang = create_line_edit_property(
         "prompt_lang", [this](QString text) { setprompt_lang(text); });
-
+    auto *prompt_text = create_text_edit_property(
+        "prompt_text", [this](ElaPlainTextEdit *text_edit) {
+          setprompt_text(text_edit->toPlainText());
+        });
     auto *model_description = create_text_edit_property(
         "model_description", [this](ElaPlainTextEdit *text_edit) {
           setmodel_description(text_edit->toPlainText());
@@ -258,9 +277,9 @@ ModelConfigContainer::ModelConfigContainer(QWidget *parent) : QWidget(parent) {
     scoll_content_laytout->addSpacing(10);
     scoll_content_laytout->addWidget(ref_audio_path);
     scoll_content_laytout->addSpacing(10);
-    scoll_content_laytout->addWidget(prompt_text);
-    scoll_content_laytout->addSpacing(10);
     scoll_content_laytout->addWidget(prompt_lang);
+    scoll_content_laytout->addSpacing(10);
+    scoll_content_laytout->addWidget(prompt_text);
     scoll_content_laytout->addSpacing(10);
     scoll_content_laytout->addWidget(model_description);
     scoll_content_laytout->addSpacing(10);

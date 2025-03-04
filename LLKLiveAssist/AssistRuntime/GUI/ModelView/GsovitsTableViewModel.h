@@ -16,7 +16,7 @@ public:
   QVariant data(const QModelIndex &index, int role) const override;
   QVariant headerData(int section, Qt::Orientation orientation,
                       int role = Qt::DisplayRole) const override;
-  void appendData(const std::vector<GSoVITSModel>& models);
+  void appendData(std::shared_ptr<std::vector<GSoVITSModel>> models);
 private:
   QStringList _header;
   QList<QStringList> _dataList;

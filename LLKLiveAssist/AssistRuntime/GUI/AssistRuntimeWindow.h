@@ -1,11 +1,11 @@
 #pragma once
 
-#include "ElaWindow.h"
 #include "Page/ModelPage.h"
 #include "Page/SettingPage.h"
 
+#include <ElaWindow.h>
 #include <QMainWindow>
-#include <qchar.h>
+
 
 class ElaContentDialog;
 

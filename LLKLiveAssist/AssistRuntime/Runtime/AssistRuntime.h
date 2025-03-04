@@ -1,5 +1,4 @@
 #pragma once
-#include "ModuleManager.h"
 #include "PluginBase.h"
 
 #include <functional>

@@ -4,6 +4,7 @@
 #include "ElaIcon.h"
 #include "ElaIconButton.h"
 #include <QIcon>
+#include <memory>
 #include <qnamespace.h>
 #include <vector>
 #include <Core/logger.h>
@@ -41,12 +42,12 @@ QVariant GsovitsTableViewModel::headerData(int section, Qt::Orientation orientat
   return QAbstractTableModel::headerData(section, orientation, role);
 }
 
-void GsovitsTableViewModel::appendData(const std::vector<GSoVITSModel> &models) {
+void GsovitsTableViewModel::appendData(std::shared_ptr<std::vector<GSoVITSModel>> models) {
 
   beginResetModel();
   _dataList.clear();
   _iconList.clear();
-  for (const auto &model : models) {
+  for (const auto &model : *models) {
     QStringList data;
     data << model.model_name.c_str();
     data << model.model_author.c_str();

@@ -4,7 +4,6 @@
 #include <sstream>
 #include <string>
 
-
 #include "Data/JsonParser.h"
 
 namespace NAssist {
@@ -17,23 +16,41 @@ struct GSoVITSModel : public Serializeable {
 
   std::string sovits_weights; // Sovits模型 .pth
   std::string gpt_weights;    // GPT模型 .ckpt
-  
+
   std::string prompt_text;
   std::string prompt_lang;
   std::string ref_audio_path;
   std::string model_description;
- bool operator ==(const GSoVITSModel& other) const
- {
-    auto result = other.model_name == model_name&&
-    other.model_author==model_author&&
-    other.model_img ==model_img&&
-    other.model_category==model_category&&
-    other.model_description==model_description&&
-    other.prompt_lang==prompt_lang&&
-    other.prompt_text==prompt_text&&
-    other.ref_audio_path==ref_audio_path;
+
+  GSoVITSModel() =default;
+  GSoVITSModel(const GSoVITSModel &other) {
+    model_name = other.model_name;
+    model_author = other.model_author;
+    model_img = other.model_img;
+    model_category = other.model_category;
+
+    sovits_weights = other.sovits_weights;
+    gpt_weights = other.gpt_weights;
+
+    prompt_text = other.prompt_text;
+    prompt_lang = other.prompt_lang;
+    ref_audio_path = other.ref_audio_path;
+    model_description = other.model_description;
+  }
+  bool operator==(const GSoVITSModel &other) const {
+    auto result =
+        other.model_name == model_name && other.model_author == model_author &&
+        other.model_img == model_img &&
+        other.model_category == model_category &&
+
+        other.sovits_weights == sovits_weights &&
+        other.gpt_weights == gpt_weights &&
+
+        other.model_description == model_description &&
+        other.prompt_lang == prompt_lang && other.prompt_text == prompt_text &&
+        other.ref_audio_path == ref_audio_path;
     return result;
- }
+  }
 };
 
 struct GSoVITSRequestBody : public Serializeable {

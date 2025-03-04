@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <filesystem>
 #include <format>
+#include <memory>
 #include <qchar.h>
 #include <qglobal.h>
 #include <qnamespace.h>
@@ -92,6 +93,16 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
   urlCard1ToolTip->setToolTip(
       "https://github.com/kanzakishigure/LLKLiveAssist");
 
+  ElaAcrylicUrlCard *anchorCard = new ElaAcrylicUrlCard(this);
+
+  anchorCard->setCardPixmapSize(QSize(62, 62));
+  anchorCard->setFixedSize(195, 225);
+  anchorCard->setTitlePixelSize(17);
+  anchorCard->setTitleSpacing(25);
+  anchorCard->setSubTitleSpacing(13);
+  anchorCard->setCardPixmap(QPixmap(":/Resource/Image/github.png"));
+anchorCard->hide();
+
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
   // toggleSwitch to setup LLK Assist Core
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -118,11 +129,10 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
           auto sovits_assist =
               ModuleManager::getInstance().getModule<GSoVITSAssist>();
           audio_assist->setAudioConfig(m_audio_config_data);
-          sovits_assist->setGSoVITSModels(m_sovits_models);
           // code in another thread
           AssistRuntime::getInstance()->stratAllModule(
-              [start_toggleSwitch,
-               start_toggleSwitchText](const std::error_code ec) {
+              [start_toggleSwitch, start_toggleSwitchText,
+               anchorCard](const std::error_code ec) {
                 QMetaObject::invokeMethod(start_toggleSwitch, "setDisabled",
                                           Qt::QueuedConnection,
                                           Q_ARG(bool, false));
@@ -130,11 +140,15 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
                   QMetaObject::invokeMethod(
                       start_toggleSwitchText, "setText", Qt::QueuedConnection,
                       Q_ARG(QString, "Assist Core 已启动"));
+                  QMetaObject::invokeMethod(anchorCard, "show",
+                                            Qt::QueuedConnection);
 
                 } else {
                   QMetaObject::invokeMethod(
                       start_toggleSwitchText, "setText", Qt::QueuedConnection,
                       Q_ARG(QString, "Assist Core 启动失败,已停止"));
+                  QMetaObject::invokeMethod(anchorCard, "hide",
+                                            Qt::QueuedConnection);
                 }
               });
           // code in another thread
@@ -151,6 +165,9 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
                 QMetaObject::invokeMethod(start_toggleSwitchText, "setText",
                                           Qt::QueuedConnection,
                                           Q_ARG(QString, "Assist Core 已停止"));
+
+                QMetaObject::invokeMethod(anchorCard, "hide",
+                                          Qt::QueuedConnection);
                 if (ec) {
                   // ElaMessageBar::error(ElaMessageBarType::Right, "Assist Core
                   // Error", ec.message().c_str(),0 );
@@ -177,6 +194,7 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
   urlCardLayout->setSpacing(15);
   urlCardLayout->setContentsMargins(30, 0, 0, 6);
   urlCardLayout->addWidget(urlCard1);
+  urlCardLayout->addWidget(anchorCard);
   urlCardLayout->addWidget(start_toggleSwitchArea);
   urlCardLayout->addStretch();
 
@@ -303,11 +321,9 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
     model_card_flow_layout = new ElaFlowLayout(model_card_flow_area);
 
     sovits_config_layout->addWidget(model_card_flow_area);
-    m_sovits_models = ModuleManager::getInstance()
-                          .getModule<GSoVITSAssist>()
-                          ->getGSoVITSModels();
 
-    flushModelCard(m_sovits_models);
+    flushModelCard(
+        ModuleManager::getInstance().getModule<GSoVITSAssist>()->getModelLib());
   }
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // audio config
@@ -503,12 +519,12 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
   // 初始化提示
   ElaMessageBar::success(ElaMessageBarType::BottomRight, "Success",
                          "初始化成功!", 2000);
-  qDebug() << "初始化成功";
 }
 
 HomePage::~HomePage() {}
 
-void HomePage::flushModelCard(const std::vector<GSoVITSModel> &sovits_models) {
+void HomePage::flushModelCard(
+    std::shared_ptr<std::vector<GSoVITSModel>> sovits_models) {
   while (auto *item = model_card_flow_layout->takeAt(0)) {
     if (QWidget *widget = item->widget()) {
       widget->deleteLater();
@@ -545,8 +561,8 @@ void HomePage::flushModelCard(const std::vector<GSoVITSModel> &sovits_models) {
     model_card->setSelected(model == defualt_model);
     model_card_flow_layout->addWidget(model_card);
   };
-  for (size_t index = 0; index < sovits_models.size(); index++) {
-    create_model_card(index, sovits_models[index]);
+  for (size_t index = 0; index < sovits_models->size(); index++) {
+    create_model_card(index, sovits_models->at(index));
   }
 }
 void HomePage::mouseReleaseEvent(QMouseEvent *event) {
@@ -566,11 +582,9 @@ void HomePage::mouseReleaseEvent(QMouseEvent *event) {
   ElaScrollPage::mouseReleaseEvent(event);
 }
 void HomePage::onGSoVITSModelChanged() {
-  m_sovits_models = ModuleManager::getInstance()
-                        .getModule<GSoVITSAssist>()
-                        ->getGSoVITSModels();
 
-  flushModelCard(m_sovits_models);
+  flushModelCard(
+      ModuleManager::getInstance().getModule<GSoVITSAssist>()->getModelLib());
 }
 
 } // namespace NAssist

@@ -5,20 +5,24 @@
 #include <ElaTableView.h>
 #include <ElaText.h>
 #include <ElaToolButton.h>
-
+#include <ElaScrollPageArea.h>
 
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QVBoxLayout>
+#include <cstddef>
 #include <qaction.h>
 #include <qobjectdefs.h>
 #include <qwidget.h>
 
+#include "Core/logger.h"
 #include "Data/GSoVITSModel.h"
 #include "GSoVITSAssist.h"
+#include "GUI/ModelView/GsovitsTableView.h"
 #include "GUI/ModelView/GsovitsTableViewModel.h"
 #include "GUI/Widgets/ModelConfigContainer.h"
 #include "ModuleManager.h"
+
 namespace NAssist {
 ModelPage::ModelPage(QWidget *parent) : BasePage(parent) {
   // 预览窗口标题
@@ -29,14 +33,14 @@ ModelPage::ModelPage(QWidget *parent) : BasePage(parent) {
   // ElaTableView
   ElaText *table_text = new ElaText("Model Library", this);
   table_text->setTextPixelSize(18);
-  m_tableView = new ElaTableView(this);
+  m_tableView = new GsovitsTableView(this);
   // ElaScrollBar* tableViewFloatScrollBar = new
   // ElaScrollBar(m_tableView->verticalScrollBar(), m_tableView);
   // tableViewFloatScrollBar->setIsAnimation(true);
   m_gsovits_table_view_model = new GsovitsTableViewModel(this);
   m_gsovits_table_view_model->appendData(NAssist::ModuleManager::getInstance()
                                              .getModule<GSoVITSAssist>()
-                                             ->getGSoVITSModels());
+                                             ->getModelLib());
   QFont table_header_font = m_tableView->horizontalHeader()->font();
   table_header_font.setPixelSize(16);
   m_tableView->horizontalHeader()->setFont(table_header_font);
@@ -63,6 +67,64 @@ ModelPage::ModelPage(QWidget *parent) : BasePage(parent) {
   centerLayout->addSpacing(10);
   centerLayout->addLayout(tableViewLayout);
   addCentralWidget(centralWidget, true, true, 0);
+
+  // signal////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  connect(
+      m_tableView, &GsovitsTableView::modelEditorShow, this,
+      [this](size_t index) {
+        auto model_lib = ModuleManager::getInstance()
+                             .getModule<GSoVITSAssist>()
+                             ->getModelLib();
+        auto model = model_lib->at(index);
+
+        GUI_INFO("编辑选中数据： {}", model.model_name);
+        m_model_config_container->setmodel_name(model.model_name.c_str());
+        Q_EMIT m_model_config_container->valuechanged("model_name",
+                                                      model.model_name.c_str());
+
+        m_model_config_container->setmodel_author(model.model_author.c_str());
+        Q_EMIT m_model_config_container->valuechanged(
+            "model_author", model.model_author.c_str());
+
+        m_model_config_container->setmodel_category(
+            model.model_category.c_str());
+        Q_EMIT m_model_config_container->valuechanged(
+            "model_category", model.model_category.c_str());
+
+        m_model_config_container->setmodel_img_path(model.model_img.c_str());
+        Q_EMIT m_model_config_container->valuechanged("model_img_path",
+                                                      model.model_img.c_str());
+
+        m_model_config_container->setsovits_weights(
+            model.sovits_weights.c_str());
+        Q_EMIT m_model_config_container->valuechanged(
+            "sovits_weights", model.sovits_weights.c_str());
+
+        m_model_config_container->setgpt_weights(model.gpt_weights.c_str());
+        Q_EMIT m_model_config_container->valuechanged(
+            "gpt_weights", model.gpt_weights.c_str());
+
+        m_model_config_container->setprompt_text(model.prompt_text.c_str());
+        Q_EMIT m_model_config_container->valuechanged(
+            "prompt_text", model.prompt_text.c_str());
+
+        m_model_config_container->setprompt_lang(model.prompt_lang.c_str());
+        Q_EMIT m_model_config_container->valuechanged(
+            "prompt_lang", model.prompt_lang.c_str());
+
+        m_model_config_container->setref_audio_path(
+            model.ref_audio_path.c_str());
+        Q_EMIT m_model_config_container->valuechanged(
+            "ref_audio_path", model.ref_audio_path.c_str());
+
+        m_model_config_container->setmodel_description(
+            model.model_description.c_str());
+        Q_EMIT m_model_config_container->valuechanged(
+            "model_description", model.model_description.c_str());
+
+        m_model_config_dilog->show();
+      });
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 ModelPage::~ModelPage() {}
 
@@ -91,54 +153,74 @@ void ModelPage::createCustomWidget(QString desText) {
     m_model_config_dilog = new ElaContentDialog(window());
     m_model_config_dilog->setLeftButtonText(u8"取消");
     m_model_config_dilog->setMiddleButtonText(u8"重置");
-    m_model_config_dilog->setRightButtonText(u8"创建");
+    m_model_config_dilog->setRightButtonText(u8"保存");
 
-    ModelConfigContainer *new_model_config_container =
-        new ModelConfigContainer(this);
-    connect(m_model_config_dilog, &ElaContentDialog::middleButtonClicked, this,
-            [=]() {
-              new_model_config_container->setmodel_name("");
-              new_model_config_container->setmodel_img_path("");
-              new_model_config_container->setmodel_author("");
-              new_model_config_container->setmodel_category("");
-              new_model_config_container->setsovits_weights("");
-              new_model_config_container->setgpt_weights("");
-              new_model_config_container->setref_audio_path("");
-              new_model_config_container->setprompt_text("");
-              new_model_config_container->setprompt_lang("");
-              new_model_config_container->setmodel_description("");
-            });
+    m_model_config_container = new ModelConfigContainer(this);
+    connect(
+        m_model_config_dilog, &ElaContentDialog::middleButtonClicked, this,
+        [=]() {
+          m_model_config_container->setmodel_name("");
+          m_model_config_container->setmodel_img_path("");
+          m_model_config_container->setmodel_author("");
+          m_model_config_container->setmodel_category("");
+          m_model_config_container->setsovits_weights("");
+          m_model_config_container->setgpt_weights("");
+          m_model_config_container->setref_audio_path("");
+          m_model_config_container->setprompt_text("");
+          m_model_config_container->setprompt_lang("");
+          m_model_config_container->setmodel_description("");
+
+          Q_EMIT m_model_config_container->valuechanged("model_name", "");
+          Q_EMIT m_model_config_container->valuechanged("model_author", "");
+          Q_EMIT m_model_config_container->valuechanged("model_category", "");
+          Q_EMIT m_model_config_container->valuechanged("model_img_path", "");
+          Q_EMIT m_model_config_container->valuechanged("sovits_weights", "");
+          Q_EMIT m_model_config_container->valuechanged("gpt_weights", "");
+          Q_EMIT m_model_config_container->valuechanged("prompt_text", "");
+          Q_EMIT m_model_config_container->valuechanged("prompt_lang", "");
+          Q_EMIT m_model_config_container->valuechanged("ref_audio_path", "");
+          Q_EMIT m_model_config_container->valuechanged("model_description",
+                                                        "");
+        });
     connect(
         m_model_config_dilog, &ElaContentDialog::rightButtonClicked, this,
         [=]() {
-          auto models = NAssist::ModuleManager::getInstance()
-                            .getModule<GSoVITSAssist>()
-                            ->getGSoVITSModels();
           GSoVITSModel model;
           model.model_name =
-              new_model_config_container->getmodel_name().toStdString();
+              m_model_config_container->getmodel_name().toStdString();
           model.model_img =
-              new_model_config_container->getmodel_img_path().toStdString();
+              m_model_config_container->getmodel_img_path().toStdString();
           model.model_author =
-              new_model_config_container->getmodel_author().toStdString();
+              m_model_config_container->getmodel_author().toStdString();
           model.model_category =
-              new_model_config_container->getmodel_category().toStdString();
+              m_model_config_container->getmodel_category().toStdString();
           model.sovits_weights =
-              new_model_config_container->getsovits_weights().toStdString();
+              m_model_config_container->getsovits_weights().toStdString();
           model.gpt_weights =
-              new_model_config_container->getgpt_weights().toStdString();
+              m_model_config_container->getgpt_weights().toStdString();
           model.ref_audio_path =
-              new_model_config_container->getref_audio_path().toStdString();
+              m_model_config_container->getref_audio_path().toStdString();
           model.prompt_text =
-              new_model_config_container->getprompt_text().toStdString();
+              m_model_config_container->getprompt_text().toStdString();
           model.prompt_lang =
-              new_model_config_container->getprompt_lang().toStdString();
+              m_model_config_container->getprompt_lang().toStdString();
           model.model_description =
-              new_model_config_container->getmodel_description().toStdString();
-          models.push_back(model);
-          NAssist::ModuleManager::getInstance()
-              .getModule<GSoVITSAssist>()
-              ->setGSoVITSModels(models);
+              m_model_config_container->getmodel_description().toStdString();
+          auto model_lib = NAssist::ModuleManager::getInstance()
+                               .getModule<GSoVITSAssist>()
+                               ->getModelLib();
+          bool find = false;
+          for (auto &lib_model : *model_lib) {
+            // TODO: maby use uuid insteadof name identify the model
+            if (model.model_name == lib_model.model_name &&
+                model.model_name == lib_model.model_author &&
+                model.model_category == lib_model.model_category) {
+              lib_model = model;
+              find = true;
+            }
+          }
+          if (!find)
+            model_lib->push_back(model);
           Q_EMIT gSovitsmodelChanged();
         });
 
@@ -146,12 +228,34 @@ void ModelPage::createCustomWidget(QString desText) {
       m_gsovits_table_view_model->appendData(
           NAssist::ModuleManager::getInstance()
               .getModule<GSoVITSAssist>()
-              ->getGSoVITSModels());
+              ->getModelLib());
     });
-    m_model_config_dilog->setCentralWidget(new_model_config_container);
+    m_model_config_dilog->setCentralWidget(m_model_config_container);
     m_model_config_dilog->hide();
-    connect(model_import_action, &QAction::triggered, this,
-            [=]() { m_model_config_dilog->show(); });
+    connect(model_import_action, &QAction::triggered, this, [=]() {
+      m_model_config_container->setmodel_name("");
+      m_model_config_container->setmodel_img_path("");
+      m_model_config_container->setmodel_author("");
+      m_model_config_container->setmodel_category("");
+      m_model_config_container->setsovits_weights("");
+      m_model_config_container->setgpt_weights("");
+      m_model_config_container->setref_audio_path("");
+      m_model_config_container->setprompt_text("");
+      m_model_config_container->setprompt_lang("");
+      m_model_config_container->setmodel_description("");
+
+      Q_EMIT m_model_config_container->valuechanged("model_name", "");
+      Q_EMIT m_model_config_container->valuechanged("model_author", "");
+      Q_EMIT m_model_config_container->valuechanged("model_category", "");
+      Q_EMIT m_model_config_container->valuechanged("model_img_path", "");
+      Q_EMIT m_model_config_container->valuechanged("sovits_weights", "");
+      Q_EMIT m_model_config_container->valuechanged("gpt_weights", "");
+      Q_EMIT m_model_config_container->valuechanged("prompt_text", "");
+      Q_EMIT m_model_config_container->valuechanged("prompt_lang", "");
+      Q_EMIT m_model_config_container->valuechanged("ref_audio_path", "");
+      Q_EMIT m_model_config_container->valuechanged("model_description", "");
+      m_model_config_dilog->show();
+    });
   }
 
   {
@@ -169,6 +273,10 @@ void ModelPage::createCustomWidget(QString desText) {
   descText->setText(desText);
   descText->setTextPixelSize(13);
 
+  ElaScrollPageArea* content_separator = new ElaScrollPageArea(this);
+    content_separator->setFixedHeight(3);
+    
+
   QVBoxLayout *topLayout = new QVBoxLayout(customWidget);
   topLayout->setContentsMargins(0, 0, 0, 0);
   topLayout->addWidget(subTitleText);
@@ -176,6 +284,9 @@ void ModelPage::createCustomWidget(QString desText) {
   topLayout->addLayout(buttonLayout);
   topLayout->addSpacing(5);
   topLayout->addWidget(descText);
+  topLayout->addSpacing(10);
+  topLayout->addWidget(content_separator);
   setCustomWidget(customWidget);
 }
+
 } // namespace NAssist

@@ -30,14 +30,13 @@ public:
   void pushAudioStream(std::vector<uint8_t> bytes);
   std::vector<uint8_t> popAudioSteam();
 
-  std::vector<GSoVITSModel> getGSoVITSModels() { return m_GSoVITSModels; }
-  void setGSoVITSModels(std::vector<GSoVITSModel> model) { m_GSoVITSModels = model; }
+  std::shared_ptr<std::vector<GSoVITSModel>> getModelLib() { return m_model_lib; }
   void setDefaultModel(size_t index) {
-    if (index >= 0 && index < m_GSoVITSModels.size())
-      m_RequestGSoVITSModel = m_GSoVITSModels[index];
+    if (index >= 0 && index < m_model_lib->size())
+    m_default_model = m_model_lib->at(index);
   }
   GSoVITSModel getDefaultModel() const{
-      return m_RequestGSoVITSModel;
+      return m_default_model;
   }
 
 private:
@@ -48,8 +47,8 @@ private:
   std::mutex m_audio_mutex;
   std::condition_variable m_msg_condition;
 
-  GSoVITSModel m_RequestGSoVITSModel;
-  std::vector<GSoVITSModel> m_GSoVITSModels;
+  GSoVITSModel m_default_model;
+  std::shared_ptr<std::vector<GSoVITSModel>> m_model_lib;
   GSoVITSRequestBody m_request_body;
 
   std::queue<std::string> m_msg_queue;

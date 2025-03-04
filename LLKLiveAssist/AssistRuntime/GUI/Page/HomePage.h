@@ -23,7 +23,7 @@ Q_SIGNALS:
 
 public:
   Q_INVOKABLE void
-  flushModelCard(const std::vector<GSoVITSModel> &sovits_models);
+  flushModelCard(std::shared_ptr<std::vector<GSoVITSModel>> sovits_models);
   void onGSoVITSModelChanged();
 
 protected:
@@ -35,7 +35,6 @@ private:
   ElaComboBox *m_comboBox{nullptr};
   ElaFlowLayout *model_card_flow_layout{nullptr};
 
-  std::vector<GSoVITSModel> m_sovits_models;
   AudioConfig m_audio_config_data;
 };
 } // namespace NAssist

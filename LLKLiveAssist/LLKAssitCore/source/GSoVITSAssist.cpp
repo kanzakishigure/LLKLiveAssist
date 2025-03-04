@@ -40,12 +40,12 @@ const std::string set_sovits_weights_endpoint = "/set_sovits_weights";
 
 void GSoVITSAssist::init() {
   // load model data
+  m_model_lib = std::make_shared<std::vector<GSoVITSModel>>();
   if (std::filesystem::exists(MODEL_DATA_PATH)) {
     std::ifstream istream(MODEL_DATA_PATH);
     using Iterator = std::istreambuf_iterator<char>;
     std::string content(Iterator{istream}, Iterator{});
     istream.close();
-
     if (!content.empty()) {
       auto jv = boost::json::parse(content);
       if (jv.is_array()) {
@@ -55,7 +55,7 @@ void GSoVITSAssist::init() {
 
             CORE_ERROR_TAG("GSoVITSAssist", "GSoVITSAssist load model fail!");
           }
-          m_GSoVITSModels.emplace_back() = get<0>(result);
+          m_model_lib->emplace_back() = get<0>(result);
         }
 
       } else {
@@ -64,7 +64,7 @@ void GSoVITSAssist::init() {
 
           CORE_ERROR_TAG("GSoVITSAssist", "GSoVITSAssist load model fail!");
         }
-        m_GSoVITSModels.emplace_back() = get<0>(result);
+        m_model_lib->emplace_back() = get<0>(result);
       }
     }
   }
@@ -74,16 +74,16 @@ void GSoVITSAssist::init() {
     std::string content(Iterator{istream}, Iterator{});
     istream.close();
 
-    if (!m_GSoVITSModels.empty()) {
-      m_RequestGSoVITSModel = m_GSoVITSModels.front();
+    if (!m_model_lib->empty()) {
+      m_default_model = m_model_lib->front();
     }
     if (!content.empty()) {
       auto jv = boost::json::parse(content);
       if (!jv.is_null())
         if (!jv.at("default_model").is_null()) {
           int index = jv.at("default_model").as_int64();
-          if (index < m_GSoVITSModels.size() && index > 0) {
-            m_RequestGSoVITSModel = m_GSoVITSModels.at(index);
+          if (index < m_model_lib->size() && index > 0) {
+            m_default_model = m_model_lib->at(index);
           }
         }
     }
@@ -145,21 +145,19 @@ std::error_code GSoVITSAssist::start() {
   {
     std::shared_ptr<HttpRequest> request = HttpRequest::CreateRequest(
         request_url, set_gpt_weights_endpoint, HttpRequestMethod::get);
-    
-    std::filesystem::path path = m_RequestGSoVITSModel.gpt_weights;
-    if(path.is_relative())
-    {
-      std::error_code ec ;
+
+    std::filesystem::path path = m_default_model.gpt_weights;
+    if (path.is_relative()) {
+      std::error_code ec;
       path = std::filesystem::absolute(path);
-      path  = std::filesystem::canonical(path,ec);
-      if(ec)
-      {
-        CORE_ERROR_TAG("GSoVITSAssist", "gpt_model_path :{{}} invalid",path.generic_string());
-        return make_error_code(gpt_sovits_errc::gpt_model_path_invalid );
+      path = std::filesystem::canonical(path, ec);
+      if (ec) {
+        CORE_ERROR_TAG("GSoVITSAssist", "gpt_model_path :{{}} invalid",
+                       path.generic_string());
+        return make_error_code(gpt_sovits_errc::gpt_model_path_invalid);
       }
     }
-    request->AddRequestParameter("weights_path",
-      path.generic_string());
+    request->AddRequestParameter("weights_path", path.generic_string());
     CORE_INFO_TAG("GSoVITSAssist", "set_gpt_weights :{}", request->Receive());
   }
 
@@ -167,21 +165,18 @@ std::error_code GSoVITSAssist::start() {
     std::shared_ptr<HttpRequest> request = HttpRequest::CreateRequest(
         request_url, set_sovits_weights_endpoint, HttpRequestMethod::get);
 
-
-    std::filesystem::path path = m_RequestGSoVITSModel.sovits_weights;
-    if(path.is_relative())
-    {
-      std::error_code ec ;
+    std::filesystem::path path = m_default_model.sovits_weights;
+    if (path.is_relative()) {
+      std::error_code ec;
       path = std::filesystem::absolute(path);
-      path = std::filesystem::canonical(path,ec);
-      if(ec)
-      {
-        CORE_ERROR_TAG("GSoVITSAssist", "sovist_model_path :{{}} invalid",path.generic_string());
-        return make_error_code(gpt_sovits_errc::sovist_model_path_invalid );
+      path = std::filesystem::canonical(path, ec);
+      if (ec) {
+        CORE_ERROR_TAG("GSoVITSAssist", "sovist_model_path :{{}} invalid",
+                       path.generic_string());
+        return make_error_code(gpt_sovits_errc::sovist_model_path_invalid);
       }
     }
-    request->AddRequestParameter("weights_path",
-      path.generic_string());
+    request->AddRequestParameter("weights_path", path.generic_string());
 
     CORE_INFO_TAG("GSoVITSAssist", "set_sovits_weights :{}",
                   request->Receive());
@@ -189,22 +184,20 @@ std::error_code GSoVITSAssist::start() {
   // generate request body use data from model
   m_request_body.text_lang = "zh";
 
-  std::filesystem::path ref_audio_path = m_RequestGSoVITSModel.ref_audio_path;
-  if(ref_audio_path.is_relative())
-  {
-    std::error_code ec ;
+  std::filesystem::path ref_audio_path = m_default_model.ref_audio_path;
+  if (ref_audio_path.is_relative()) {
+    std::error_code ec;
     ref_audio_path = std::filesystem::absolute(ref_audio_path);
-    ref_audio_path = std::filesystem::canonical(ref_audio_path,ec);
-    if(ec)
-    {
-      CORE_ERROR_TAG("GSoVITSAssist", "ref_audio_path :{{}} invalid",ref_audio_path.generic_string());
+    ref_audio_path = std::filesystem::canonical(ref_audio_path, ec);
+    if (ec) {
+      CORE_ERROR_TAG("GSoVITSAssist", "ref_audio_path :{{}} invalid",
+                     ref_audio_path.generic_string());
       return make_error_code(gpt_sovits_errc::ref_audio_path_invalid);
     }
-
   }
   m_request_body.ref_audio_path = ref_audio_path.generic_string();
-  m_request_body.prompt_text = m_RequestGSoVITSModel.prompt_text;
-  m_request_body.prompt_lang = m_RequestGSoVITSModel.prompt_lang;
+  m_request_body.prompt_text = m_default_model.prompt_text;
+  m_request_body.prompt_lang = m_default_model.prompt_lang;
 
   // create a thread use for send request;
   {
@@ -261,7 +254,8 @@ void GSoVITSAssist::shutdown() {
                      MODEL_DATA_PATH);
       return;
     }
-    boost::json::value result = boost::json::value_from(m_GSoVITSModels);
+    auto model_lib = *m_model_lib;
+    boost::json::value result = boost::json::value_from(model_lib);
     std::string json_str = boost::json::serialize(result);
     CORE_INFO_TAG("GSoVITSAssist", "保存模型文件信息 :\n {} ", json_str);
     ostream << json_str;
@@ -277,9 +271,9 @@ void GSoVITSAssist::shutdown() {
       return;
     }
     size_t index = 0;
-    for (auto &model : m_GSoVITSModels) {
+    for (auto &model : *m_model_lib) {
 
-      if (m_RequestGSoVITSModel == model) {
+      if (m_default_model == model) {
         break;
       }
       index++;

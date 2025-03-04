@@ -1,5 +1,3 @@
-
-#include "GUI/AssistRuntimeWindow.h"
 #include "ModuleManager.h"
 #include "Runtime/AssistRuntime.h"
 
@@ -9,13 +7,12 @@
 
 #include "ElaApplication.h"
 #include "GUI/AssistRuntimeWindow.h"
-
 #ifdef Q_OS_WIN
 #include <Windows.h>
 #endif
 namespace NAssist {
 
-int Main(int argc, char **argv) {
+int Main(int argc, char *argv[]) {
 
   // init the gui
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
@@ -47,4 +44,4 @@ int Main(int argc, char **argv) {
 }
 } // namespace NAssist
 
-int main(int argc, char **argv) { return NAssist::Main(argc, argv); }
+int main(int argc, char *argv[]) { return NAssist::Main(argc, argv); }

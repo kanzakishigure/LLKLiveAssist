@@ -62,11 +62,13 @@ private:
 #define RUNTIME_ERROR(...)    ::NAssist::LLKLogger::GetLogger(::NAssist::LLKLogger::Type::Runtime)->error(__VA_ARGS__)
 #define RUNTIME_CRITICAL(...) ::NAssist::LLKLogger::GetLogger(::NAssist::LLKLogger::Type::Runtime)->critical(__VA_ARGS__)
 
-#define GUI_TRACE(...)    auto logger = ::NAssist::LLKLogger::GetLogger(::NAssist::LLKLogger::Type::GUI);if(logger)logger->trace(__VA_ARGS__) 
-#define GUI_INFO(...)     auto logger = ::NAssist::LLKLogger::GetLogger(::NAssist::LLKLogger::Type::GUI);if(logger)logger->info(__VA_ARGS__) 
-#define GUI_WARN(...)     auto logger = ::NAssist::LLKLogger::GetLogger(::NAssist::LLKLogger::Type::GUI);if(logger)logger->warn(__VA_ARGS__) 
-#define GUI_ERROR(...)    auto logger = ::NAssist::LLKLogger::GetLogger(::NAssist::LLKLogger::Type::GUI);if(logger)logger->error(__VA_ARGS__) 
-#define GUI_CRITICAL(...) auto logger = ::NAssist::LLKLogger::GetLogger(::NAssist::LLKLogger::Type::GUI);if(logger)logger->critical(__VA_ARGS__) 
+#define CONCAT_DIRECT(a, b)    a##b
+#define CONCAT(a, b)           CONCAT_DIRECT(a, b)
+#define GUI_TRACE(...)     auto CONCAT(logger,__LINE__) = ::NAssist::LLKLogger::GetLogger(::NAssist::LLKLogger::Type::GUI);if(CONCAT(logger,__LINE__))CONCAT(logger,__LINE__)->trace(__VA_ARGS__)
+#define GUI_INFO(...)      auto CONCAT(logger,__LINE__) = ::NAssist::LLKLogger::GetLogger(::NAssist::LLKLogger::Type::GUI);if(CONCAT(logger,__LINE__))CONCAT(logger,__LINE__)->info(__VA_ARGS__) 
+#define GUI_WARN(...)      auto CONCAT(logger,__LINE__) = ::NAssist::LLKLogger::GetLogger(::NAssist::LLKLogger::Type::GUI);if(CONCAT(logger,__LINE__))CONCAT(logger,__LINE__)->warn(__VA_ARGS__) 
+#define GUI_ERROR(...)     auto CONCAT(logger,__LINE__) = ::NAssist::LLKLogger::GetLogger(::NAssist::LLKLogger::Type::GUI);if(CONCAT(logger,__LINE__))CONCAT(logger,__LINE__)->error(__VA_ARGS__)
+#define GUI_CRITICAL(...)  auto CONCAT(logger,__LINE__) = ::NAssist::LLKLogger::GetLogger(::NAssist::LLKLogger::Type::GUI);if(CONCAT(logger,__LINE__))CONCAT(logger,__LINE__)->critical(__VA_ARGS__) 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Tagged logs                                                                                    

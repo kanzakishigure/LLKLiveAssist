@@ -111,6 +111,8 @@
         <file>Resource/Image/Home_Background.png</file>
         <file>Resource/Image/Home_Background_Dark.png</file>
         <file>Resource/Image/rushmy.png</file>
+        <file>Resource/Image/model.png</file>
+        
         
     </qresource>
 </RCC>
