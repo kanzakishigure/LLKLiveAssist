@@ -17,6 +17,7 @@
 #include <qnamespace.h>
 #include <qtextedit.h>
 
+#include "ElaApplication.h"
 #include "ElaContentDialog.h"
 #include "ElaDockWidget.h"
 #include "ElaEventBus.h"
@@ -29,11 +30,11 @@
 #include "ElaTheme.h"
 #include "ElaToolBar.h"
 #include "ElaToolButton.h"
-
 #include "Page/HomePage.h"
 #include "Page/ModelPage.h"
 #include "Page/SettingPage.h"
 #include "Widgets/LogWidget.h"
+
 
 #include "Page/SettingPage.h"
 #include "spdlog/sinks/qt_sinks.h"
@@ -93,10 +94,11 @@ void AssistRuntimeWindow::initWindow() {
   resize(1200, 740);
   // ElaLog::getInstance()->initMessageLog(true);
   eTheme->setThemeMode(ElaThemeType::Dark);
-  // setIsNavigationBarEnable(false);
-  // setNavigationBarDisplayMode(ElaNavigationType::Compact);
-  // setWindowButtonFlag(ElaAppBarType::MinimizeButtonHint, false);
-  setUserInfoCardPixmap(QPixmap(":/Resource/Image/LLK.png"));
+  eApp->setIsEnableMica(true);
+      // setIsNavigationBarEnable(false);
+      // setNavigationBarDisplayMode(ElaNavigationType::Compact);
+      // setWindowButtonFlag(ElaAppBarType::MinimizeButtonHint, false);
+      setUserInfoCardPixmap(QPixmap(":/Resource/Image/LLK.png"));
   setUserInfoCardTitle("LLK Assist");
   setUserInfoCardSubTitle("基于Soviet的弹幕姬");
   setWindowTitle("LLK Assist");
@@ -117,7 +119,6 @@ void AssistRuntimeWindow::initEdgeLayout() {
 
   toolBar->addWidget(logger_button);
   this->addToolBar(Qt::TopToolBarArea, toolBar);
-  
 
   ElaDockWidget *log_dock_widget = new ElaDockWidget("日志信息", this);
   QPlainTextEdit *log_editor = new ElaPlainTextEdit(this);

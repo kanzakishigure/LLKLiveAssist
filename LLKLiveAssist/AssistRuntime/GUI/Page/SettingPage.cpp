@@ -26,6 +26,7 @@ SettingPage::SettingPage(QWidget *parent) : BasePage(parent) {
   _themeComboBox = new ElaComboBox(this);
   _themeComboBox->addItem("日间模式");
   _themeComboBox->addItem("夜间模式");
+  _themeComboBox->setCurrentIndex(1);
   ElaScrollPageArea *themeSwitchArea = new ElaScrollPageArea(this);
   QHBoxLayout *themeSwitchLayout = new QHBoxLayout(themeSwitchArea);
   ElaText *themeSwitchText = new ElaText("主题切换", this);
@@ -66,6 +67,7 @@ SettingPage::SettingPage(QWidget *parent) : BasePage(parent) {
   micaSwitchLayout->addWidget(micaSwitchText);
   micaSwitchLayout->addStretch();
   micaSwitchLayout->addWidget(_micaSwitchButton);
+  _micaSwitchButton->setIsToggled(true);
   connect(_micaSwitchButton, &ElaToggleSwitch::toggled, this,
           [=](bool checked) { eApp->setIsEnableMica(checked); });
 
