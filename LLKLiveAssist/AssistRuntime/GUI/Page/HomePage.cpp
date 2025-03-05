@@ -7,18 +7,22 @@
 #include <QPainter>
 #include <QTimer>
 #include <QVBoxLayout>
+
 #include <cstddef>
 #include <filesystem>
 #include <format>
 #include <memory>
 #include <qchar.h>
+#include <qdatetime.h>
 #include <qglobal.h>
 #include <qnamespace.h>
 #include <qobjectdefs.h>
 #include <qpushbutton.h>
+#include <qtimer.h>
 #include <qwidget.h>
 #include <system_error>
 
+#include "BiliClientAssist.h"
 #include "Data/GSoVITSModel.h"
 #include "Def.h"
 #include "ElaAcrylicUrlCard.h"
@@ -45,10 +49,18 @@
 #include "ElaToolTip.h"
 #include "GSoVITSAssist.h"
 #include "GUI/Widgets/LLKPopularCard.h"
+
+#include "GUI/Widgets/LLKAnimationCard.h"
+#include "Utils/SignalEmitter.h"
+#include "Utils/UrlImageLoader.h"
 #include <ModuleManager.h>
 #include <vector>
 
+#include "GUI/Widgets/LLKUrlCard.h"
+#include "Net/HttpRequest.h"
 #include "Runtime/AssistRuntime.h"
+
+#define TEST_ENV true
 
 namespace NAssist {
 
@@ -87,21 +99,19 @@ HomePage::HomePage(QWidget *parent) : BasePage(parent) {
   urlCard1->setSubTitleSpacing(13);
   urlCard1->setUrl("https://github.com/kanzakishigure/LLKLiveAssist");
   urlCard1->setCardPixmap(QPixmap(":/Resource/Image/github.png"));
-  urlCard1->setTitle("LLK Live Assist Github");
+  urlCard1->setTitle("LLK Live Assist");
   urlCard1->setSubTitle("使用璐璐卡直播小助手");
   ElaToolTip *urlCard1ToolTip = new ElaToolTip(urlCard1);
   urlCard1ToolTip->setToolTip(
       "https://github.com/kanzakishigure/LLKLiveAssist");
 
-  ElaAcrylicUrlCard *anchorCard = new ElaAcrylicUrlCard(this);
-
-  anchorCard->setCardPixmapSize(QSize(62, 62));
-  anchorCard->setFixedSize(195, 225);
-  anchorCard->setTitlePixelSize(17);
-  anchorCard->setTitleSpacing(25);
-  anchorCard->setSubTitleSpacing(13);
-  anchorCard->setCardPixmap(QPixmap(":/Resource/Image/github.png"));
-anchorCard->hide();
+  LLKUrlCard *anchor_card = new LLKUrlCard(this);
+  anchor_card->setCardPixmapSize(QSize(62, 62));
+  anchor_card->setFixedSize(195, 225);
+  anchor_card->setTitlePixelSize(17);
+  anchor_card->setTitleSpacing(25);
+  anchor_card->setSubTitleSpacing(13);
+  anchor_card->setVisible(false);
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
   // toggleSwitch to setup LLK Assist Core
@@ -120,64 +130,117 @@ anchorCard->hide();
 
   start_toggleSwitchLayout->addStretch();
 
-  connect(
-      start_toggleSwitch, &ElaToggleSwitch::toggled, this, [=](bool checked) {
-        if (checked) {
+  SignalEmitter *open_emitter = new SignalEmitter(this);
+  SignalEmitter *close_emitter = new SignalEmitter(this);
+  connect(open_emitter, &SignalEmitter::getRequest, this,
+          [=](std::error_code ec) {
+            start_toggleSwitch->setDisabled(false);
+            if (!ec) {
 
-          auto audio_assist =
-              ModuleManager::getInstance().getModule<AudioAssist>();
-          auto sovits_assist =
-              ModuleManager::getInstance().getModule<GSoVITSAssist>();
-          audio_assist->setAudioConfig(m_audio_config_data);
-          // code in another thread
-          AssistRuntime::getInstance()->stratAllModule(
-              [start_toggleSwitch, start_toggleSwitchText,
-               anchorCard](const std::error_code ec) {
-                QMetaObject::invokeMethod(start_toggleSwitch, "setDisabled",
-                                          Qt::QueuedConnection,
-                                          Q_ARG(bool, false));
-                if (!ec) {
-                  QMetaObject::invokeMethod(
-                      start_toggleSwitchText, "setText", Qt::QueuedConnection,
-                      Q_ARG(QString, "Assist Core 已启动"));
-                  QMetaObject::invokeMethod(anchorCard, "show",
-                                            Qt::QueuedConnection);
+              auto data = ModuleManager::getInstance()
+                              .getModule<BiliClientAssist>()
+                              ->getAppStartInfo();
+              std::string auther_id = fmt::format(
+                  "https://live.bilibili.com/{}", data.AnchorInfo.RoomId);
+              std::string auther_name = data.AnchorInfo.UName;
+              UrlImageLoader loader;
+              
+              loader.loadFromUrl(QUrl(data.AnchorInfo.UFace.c_str()));
+              anchor_card->setCardPixmap(loader.getQPixmap().copy());
+              anchor_card->setUrl(auther_id.c_str());
+              anchor_card->setTitle(auther_name.c_str());
+              anchor_card->setSubTitle("璐璐卡直播小助手已在监听弹幕 ✿✿ヽ(°▽°)ノ✿");
+              
+              start_toggleSwitchText->setText("Assist Core 已启动");
+              anchor_card->showCard();
 
-                } else {
-                  QMetaObject::invokeMethod(
-                      start_toggleSwitchText, "setText", Qt::QueuedConnection,
-                      Q_ARG(QString, "Assist Core 启动失败,已停止"));
-                  QMetaObject::invokeMethod(anchorCard, "hide",
-                                            Qt::QueuedConnection);
-                }
-              });
-          // code in another thread
-          start_toggleSwitchText->setText("Assist Core 启动中");
-          start_toggleSwitch->setDisabled(true);
+            } else {
+              start_toggleSwitchText->setText("Assist Core 启动失败,已停止");
+            }
+          });
+  connect(close_emitter, &SignalEmitter::getRequest, this,
+          [=](std::error_code ec) {
+            start_toggleSwitch->setDisabled(false);
+            start_toggleSwitchText->setText("Assist Core 已停止");
+            anchor_card->hideCard();
+            if (ec) {
+              // ElaMessageBar::error(ElaMessageBarType::Right, "Assist
+              // Core Error", ec.message().c_str(),0 );
+            }
+          });
+  connect(start_toggleSwitch, &ElaToggleSwitch::toggled, this,
+          [=](bool checked) {
+            if (checked) {
+              auto audio_assist =
+                  ModuleManager::getInstance().getModule<AudioAssist>();
+              auto sovits_assist =
+                  ModuleManager::getInstance().getModule<GSoVITSAssist>();
+              audio_assist->setAudioConfig(m_audio_config_data);
+      // code in another thread
+#if TEST_ENV
+              AssistRuntime::getInstance()->stratAllModule(
+                  [open_emitter](const std::error_code ec) {
+                    QMetaObject::invokeMethod(open_emitter, "triggerLambda",
+                                              Qt::QueuedConnection,
+                                              Q_ARG(const std::error_code, ec));
+                  });
+#else
+      AssistRuntime::getInstance()->stratAllModule(
+          [start_toggleSwitch, start_toggleSwitchText,
+           anchor_card](const std::error_code ec) {
+            QMetaObject::invokeMethod(start_toggleSwitch, "setDisabled",
+                                      Qt::QueuedConnection, Q_ARG(bool, false));
+            if (!ec) {
+              QMetaObject::invokeMethod(start_toggleSwitchText, "setText",
+                                        Qt::QueuedConnection,
+                                        Q_ARG(QString, "Assist Core 已启动"));
+              QMetaObject::invokeMethod(anchor_card, "showCard",
+                                        Qt::QueuedConnection);
 
-        } else {
-          // code in another thread
-          AssistRuntime::getInstance()->stopAllModule(
-              [=](const std::error_code ec) {
-                QMetaObject::invokeMethod(start_toggleSwitch, "setDisabled",
-                                          Qt::QueuedConnection,
-                                          Q_ARG(bool, false));
-                QMetaObject::invokeMethod(start_toggleSwitchText, "setText",
-                                          Qt::QueuedConnection,
-                                          Q_ARG(QString, "Assist Core 已停止"));
+            } else {
+              QMetaObject::invokeMethod(
+                  start_toggleSwitchText, "setText", Qt::QueuedConnection,
+                  Q_ARG(QString, "Assist Core 启动失败,已停止"));
+            }
+          });
+#endif
+              // code in another thread
+              start_toggleSwitchText->setText("Assist Core 启动中");
+              start_toggleSwitch->setDisabled(true);
 
-                QMetaObject::invokeMethod(anchorCard, "hide",
-                                          Qt::QueuedConnection);
-                if (ec) {
-                  // ElaMessageBar::error(ElaMessageBarType::Right, "Assist Core
-                  // Error", ec.message().c_str(),0 );
-                }
-              });
-          // code in another thread
-          start_toggleSwitchText->setText("Assist Core 停止中");
-          start_toggleSwitch->setDisabled(true);
-        }
-      });
+            } else {
+      // code in another thread
+#if TEST_ENV
+              AssistRuntime::getInstance()->stopAllModule(
+                  [=](const std::error_code ec) {
+                    QMetaObject::invokeMethod(close_emitter, "triggerLambda",
+                                              Qt::QueuedConnection,
+                                              Q_ARG(const std::error_code, ec));
+                  });
+#else
+      {
+        AssistRuntime::getInstance()->stopAllModule(
+            [=](const std::error_code ec) {
+              QMetaObject::invokeMethod(start_toggleSwitch, "setDisabled",
+                                        Qt::QueuedConnection,
+                                        Q_ARG(bool, false));
+              QMetaObject::invokeMethod(start_toggleSwitchText, "setText",
+                                        Qt::QueuedConnection,
+                                        Q_ARG(QString, "Assist Core 已停止"));
+              QMetaObject::invokeMethod(anchor_card, "hideCard",
+                                        Qt::QueuedConnection);
+              if (ec) {
+                // ElaMessageBar::error(ElaMessageBarType::Right, "Assist Core
+                // Error", ec.message().c_str(),0 );
+              }
+            });
+      }
+#endif
+              // code in another thread
+              start_toggleSwitchText->setText("Assist Core 停止中");
+              start_toggleSwitch->setDisabled(true);
+            }
+          });
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
   // github ulr card for llk live assist
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -194,8 +257,8 @@ anchorCard->hide();
   urlCardLayout->setSpacing(15);
   urlCardLayout->setContentsMargins(30, 0, 0, 6);
   urlCardLayout->addWidget(urlCard1);
-  urlCardLayout->addWidget(anchorCard);
   urlCardLayout->addWidget(start_toggleSwitchArea);
+  urlCardLayout->addWidget(anchor_card);
   urlCardLayout->addStretch();
 
   QVBoxLayout *cardScrollAreaWidgetLayout =
@@ -582,7 +645,6 @@ void HomePage::mouseReleaseEvent(QMouseEvent *event) {
   ElaScrollPage::mouseReleaseEvent(event);
 }
 void HomePage::onGSoVITSModelChanged() {
-
   flushModelCard(
       ModuleManager::getInstance().getModule<GSoVITSAssist>()->getModelLib());
 }

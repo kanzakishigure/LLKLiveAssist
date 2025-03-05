@@ -37,6 +37,7 @@ public:
   virtual PluginType getType() override { return PluginType::BiliClient; }
   static PluginType getStaticType() { return PluginType::BiliClient; }
 
+  AppStartInfo getAppStartInfo(){return m_AppStartInfo;}
   std::string getUserCode() { return m_Code; }
   void setUserCode(const std::string &user_code) { m_Code = user_code; }
 

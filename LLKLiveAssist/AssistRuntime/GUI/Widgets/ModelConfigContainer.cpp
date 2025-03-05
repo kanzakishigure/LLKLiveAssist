@@ -155,7 +155,6 @@ ModelConfigContainer::ModelConfigContainer(QWidget *parent) : QWidget(parent) {
                     QPixmap(":/Resource/Image/model.png").copy())
                                   : icon_image->setPixmap(value);
                 }
-                GUI_INFO("model_img_path is {}",value.isEmpty());
               });
       property_area_layout->addWidget(icon_image, 0, 0);
       property_area_layout->addWidget(author_property, 0, 1);

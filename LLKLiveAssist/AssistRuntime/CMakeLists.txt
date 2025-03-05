@@ -19,7 +19,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
   set(CMAKE_PREFIX_PATH ${LLKLiveAssist_ROOT_DIR}/Vendor/QT/5.12.12/msvc2017_64/lib/cmake/QT5)
 endif()
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets REQUIRED)
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets Network  REQUIRED)
 
 
 

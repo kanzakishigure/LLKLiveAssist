@@ -111,14 +111,13 @@ void AssistRuntimeWindow::initEdgeLayout() {
   toolBar->setToolBarSpacing(3);
   toolBar->setToolButtonStyle(Qt::ToolButtonIconOnly);
   toolBar->setIconSize(QSize(25, 25));
-  // Set logger
-  /*
-  ElaDockWidget *logDockWidget = new ElaDockWidget("日志信息", this);
-  logDockWidget->setWidget(new LogWidget(this));
-  this->addDockWidget(Qt::RightDockWidgetArea, logDockWidget);
-  resizeDocks({logDockWidget}, {200}, Qt::Horizontal);
 
-  */
+  ElaToolButton *logger_button = new ElaToolButton(this);
+  logger_button->setElaIcon(ElaIconType::Terminal);
+
+  toolBar->addWidget(logger_button);
+  this->addToolBar(Qt::TopToolBarArea, toolBar);
+  
 
   ElaDockWidget *log_dock_widget = new ElaDockWidget("日志信息", this);
   QPlainTextEdit *log_editor = new ElaPlainTextEdit(this);
@@ -129,6 +128,12 @@ void AssistRuntimeWindow::initEdgeLayout() {
   LLKLogger::instance()->addLogger(
       spdlog::qt_logger_mt("qt_logger", log_editor), LLKLogger::Type::GUI);
   GUI_INFO("LLKLogger init success");
+
+  connect(logger_button, &ElaToolButton::triggered, [log_dock_widget]() {
+    if (log_dock_widget->isHidden()) {
+      log_dock_widget->show();
+    }
+  });
 }
 
 void AssistRuntimeWindow::initContent() {

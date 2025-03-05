@@ -30,11 +30,13 @@ int Main(int argc, char *argv[]) {
   std::filesystem::current_path(LLK_WORK_SPACE);
 #endif
   LLKLogger::instance()->init();
-  // init the AssistCore
-  AssistRuntime instance;
+  
 
+  
   QApplication app(argc, argv);
   eApp->init();
+  // init the AssistCore
+  AssistRuntime instance;
   AssistRuntimeWindow w;
   w.show();
   auto exit_code = app.exec();

@@ -24,10 +24,10 @@ protected:
   virtual void createCustomWidget(QString desText) override;
 
 private:
-  ElaMenu *model_menu;
-  GsovitsTableView *m_tableView;
-  GsovitsTableViewModel *m_gsovits_table_view_model;
-  ElaContentDialog *m_model_config_dilog;
-  ModelConfigContainer *m_model_config_container;
+  ElaMenu *model_menu{nullptr};
+  GsovitsTableView *m_tableView{nullptr};
+  GsovitsTableViewModel *m_gsovits_table_view_model{nullptr};
+  ElaContentDialog *m_model_config_dilog{nullptr};
+  ModelConfigContainer *m_model_config_container{nullptr};
 };
 } // namespace NAssist
