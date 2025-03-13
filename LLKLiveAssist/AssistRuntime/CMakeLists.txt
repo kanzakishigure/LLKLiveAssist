@@ -53,6 +53,16 @@ else()
 endif()
 
 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+
+  target_compile_definitions(${TARGET_NAME} PRIVATE RUNTIME_SETTING_PATH="${LLKLiveAssist_ROOT_DIR}/Config/RuntimeSetting.json")
+
+elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+
+  target_compile_definitions(${TARGET_NAME} PRIVATE RUNTIME_SETTING_PATH="Config/RuntimeSetting.json")
+
+endif()
+
 set_target_properties(${TARGET_NAME} PROPERTIES CXX_STANDARD 17 OUTPUT_NAME "AssistRuntime")
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER "Assist")
 

@@ -28,6 +28,9 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   target_compile_definitions(${TARGET_NAME} PRIVATE MODEL_DATA_PATH="${LLKLiveAssist_ROOT_DIR}/Config/Model/Model.json")
   target_compile_definitions(${TARGET_NAME} PRIVATE MODEL_CONFIG_PATH="${LLKLiveAssist_ROOT_DIR}/Config/Model/ModelSetting.json")
   target_compile_definitions(${TARGET_NAME} PRIVATE BILI_CONFIG_PATH="${LLKLiveAssist_ROOT_DIR}/Config/BiliClientAssistSetting.json")
+
+  target_compile_definitions(${TARGET_NAME} PRIVATE INFER_DATA_PATH="${LLKLiveAssist_ROOT_DIR}/Config/Model/InferSetting.json")
+
   target_compile_definitions(${TARGET_NAME} PRIVATE LLKDebug)
   target_compile_definitions(${TARGET_NAME} PUBLIC LLK_WORK_SPACE="${LLKLiveAssist_ROOT_DIR}")
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
@@ -36,6 +39,8 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
   target_compile_definitions(${TARGET_NAME} PRIVATE MODEL_DATA_PATH="Config/Model/Model.json")
   target_compile_definitions(${TARGET_NAME} PRIVATE MODEL_CONFIG_PATH="Config/Model/ModelSetting.json")
   target_compile_definitions(${TARGET_NAME} PRIVATE BILI_CONFIG_PATH="Config/BiliClientAssistSetting.json")
+  target_compile_definitions(${TARGET_NAME} PRIVATE INFER_DATA_PATH="Config/Model/InferSetting.json")
+
   target_compile_definitions(${TARGET_NAME} PRIVATE LLKRelease)
 endif()
 
