@@ -1,17 +1,1 @@
-[
-    {
-        "top_k": 5,
-        "top_p": 1,
-        "temperature": 1,
-        "text_split_method": "cut0",
-        "batch_size": 1,
-        "batch_threshold": 0.75,
-        "split_bucket": true,
-        "return_fragment": true,
-        "speed_factor": 1.0,
-        "streaming_mode": false,
-        "seed": -1,
-        "parallel_infer": true,
-        "repetition_penalty": 1.35
-    }
-]
+{"top_k":5,"top_p":1E0,"temperature":1E0,"text_split_method":"cut0","batch_size":1,"batch_threshold":7.5E-1,"split_bucket":true,"return_fragment":true,"speed_factor":1E0,"streaming_mode":false,"seed":-1,"parallel_infer":true,"repetition_penalty":1.350000023841858E0}
