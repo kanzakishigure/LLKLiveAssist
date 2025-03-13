@@ -76,14 +76,14 @@ void BiliClientAssist::init() {
 
   app_heart_periodic_task = std::make_shared<PeriodicTask>(
       [this]() {
-        CORE_TRACE_TAG("BiliClient", "app heartbeat");
+        
         HeartBeatInteractivePlay(m_AppStartInfo.GameInfo.GameId);
       },
       20);
 
   game_heart_periodic_task = std::make_shared<PeriodicTask>(
       [this]() {
-        CORE_TRACE_TAG("BiliClient", "game heartbeat");
+        
         HeartBeatWebsocketClient();
       },
       30);
@@ -182,7 +182,10 @@ void BiliClientAssist::HeartBeatInteractivePlay(std::string gameId) {
           .str();
   auto json_value = RequestWebUTF8(OpenLiveDomain, k_InteractivePlayHeartBeat,
                                    HttpRequestMethod::post, param);
-  CORE_TRACE_TAG("BiliClient", "app heartbeat success");
+  if(json_value.is_null())
+  {
+    CORE_ERROR_TAG("BiliClient", "app heartbeat error");
+  }
 }
 
 boost::json::value BiliClientAssist::RequestWebUTF8(
@@ -244,8 +247,6 @@ boost::json::value BiliClientAssist::RequestWebUTF8(
     CORE_ERROR_TAG("BiliClient", "http response pasrse fail :{}", e.what());
   }
 
-  CORE_TRACE_TAG("BiliClient", "http response is :\n{}",
-                 pretty_json_string(result));
   return result;
 }
 
@@ -305,7 +306,7 @@ void BiliClientAssist::HeartBeatWebsocketClient() {
     CORE_ERROR_TAG("","WebsocketClient HeartBeat fail : {}",ec.message());
     return;
   }
-  CORE_TRACE_TAG("BiliClient", "game heartbeat success");
+  
 }
 
 void BiliClientAssist::WebsocketClientReceive() {

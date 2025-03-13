@@ -7,6 +7,8 @@
 #include "Data/JsonParser.h"
 
 namespace NAssist {
+
+  
 struct GSoVITSModel : public Serializeable {
 
   std::string model_name;
@@ -22,7 +24,9 @@ struct GSoVITSModel : public Serializeable {
   std::string ref_audio_path;
   std::string model_description;
 
-  GSoVITSModel() =default;
+  double model_volume_factor = 1.0;
+
+  GSoVITSModel() = default;
   GSoVITSModel(const GSoVITSModel &other) {
     model_name = other.model_name;
     model_author = other.model_author;
@@ -36,6 +40,7 @@ struct GSoVITSModel : public Serializeable {
     prompt_lang = other.prompt_lang;
     ref_audio_path = other.ref_audio_path;
     model_description = other.model_description;
+    model_volume_factor = other.model_volume_factor;
   }
   bool operator==(const GSoVITSModel &other) const {
     auto result =
@@ -52,13 +57,8 @@ struct GSoVITSModel : public Serializeable {
     return result;
   }
 };
+struct InferData : public Serializeable {
 
-struct GSoVITSRequestBody : public Serializeable {
-  std::string text;
-  std::string text_lang;
-  std::string ref_audio_path;
-  std::string prompt_text;
-  std::string prompt_lang;
   int top_k = 5;
   float top_p = 1;
   float temperature = 1;
@@ -73,6 +73,16 @@ struct GSoVITSRequestBody : public Serializeable {
   bool parallel_infer = true;
   float repetition_penalty = 1.35;
 };
+struct GSoVITSRequestBody : public Serializeable {
+  std::string text;
+  std::string text_lang;
+  std::string ref_audio_path;
+  std::string prompt_text;
+  std::string prompt_lang;
+  std::string media_type = "wav";
+  InferData infer_data;
+};
+
 inline std::string GSoVITSRequestBody2JsonString(GSoVITSRequestBody body) {
   std::stringstream ss;
   ss << "{" << R"("text":")" << body.text << "\"";
@@ -80,19 +90,22 @@ inline std::string GSoVITSRequestBody2JsonString(GSoVITSRequestBody body) {
   ss << "," << R"("ref_audio_path":")" << body.ref_audio_path << "\"";
   ss << "," << R"("prompt_text":")" << body.prompt_text << "\"";
   ss << "," << R"("prompt_lang":")" << body.prompt_lang << "\"";
-  ss << "," << "\"top_k\":" << body.top_k;
-  ss << "," << "\"top_p\":" << body.top_p;
-  ss << "," << "\"temperature\":" << body.temperature;
-  ss << "," << R"("text_split_method":")" << body.text_split_method << "\"";
-  ss << "," << "\"batch_size\":" << body.batch_size;
-  ss << "," << "\"batch_threshold\":" << body.batch_threshold;
-  ss << "," << "\"split_bucket\":" << body.split_bucket;
-  ss << "," << "\"return_fragment\":" << body.return_fragment;
-  ss << "," << "\"speed_factor\":" << body.speed_factor;
-  ss << "," << "\"streaming_mode\":" << body.streaming_mode;
-  ss << "," << "\"seed\":" << body.seed;
-  ss << "," << "\"parallel_infer\":" << body.parallel_infer;
-  ss << "," << "\"repetition_penalty\":" << body.repetition_penalty << "}";
+  ss << "," << "\"top_k\":" << body.infer_data.top_k;
+  ss << "," << "\"top_p\":" << body.infer_data.top_p;
+  ss << "," << "\"temperature\":" << body.infer_data.temperature;
+  ss << "," << R"("text_split_method":")" << body.infer_data.text_split_method
+     << "\"";
+  ss << "," << R"("media_type":")" << body.media_type << "\"";
+  ss << "," << "\"batch_size\":" << body.infer_data.batch_size;
+  ss << "," << "\"batch_threshold\":" << body.infer_data.batch_threshold;
+  ss << "," << "\"split_bucket\":" << body.infer_data.split_bucket;
+  ss << "," << "\"return_fragment\":" << body.infer_data.return_fragment;
+  ss << "," << "\"speed_factor\":" << body.infer_data.speed_factor;
+  ss << "," << "\"streaming_mode\":" << body.infer_data.streaming_mode;
+  ss << "," << "\"seed\":" << body.infer_data.seed;
+  ss << "," << "\"parallel_infer\":" << body.infer_data.parallel_infer;
+  ss << "," << "\"repetition_penalty\":" << body.infer_data.repetition_penalty
+     << "}";
 
   return ss.str();
 }

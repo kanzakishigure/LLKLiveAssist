@@ -1,5 +1,6 @@
 #pragma once
 
+
 #include <boost/json.hpp>
 #include <boost/json/conversion.hpp>
 #include <boost/json/parse.hpp>
@@ -15,9 +16,8 @@
 
 namespace NAssist {
 
-std::string pretty_json_string( boost::json::value const &jv,
-                  std::string *indent = nullptr) ;
-
+std::string pretty_json_string(boost::json::value const &jv,
+                               std::string *indent = nullptr);
 
 class Serializeable {
 public:
@@ -50,8 +50,8 @@ public:
 class AppStartInfo;
 class GSoVITSModel;
 class ProtoPacket;
-class GSoVITSRequestBody;
-
+struct GSoVITSRequestBody;
+struct InferData;
 } // namespace NAssist
 
 namespace boost::json {
@@ -64,15 +64,15 @@ NAssist::GSoVITSModel
 tag_invoke(const boost::json::value_to_tag<NAssist::GSoVITSModel> &,
            boost::json::value const &jv);
 void tag_invoke(const value_from_tag &, value &jv,
-NAssist::GSoVITSModel const &model);
+                NAssist::GSoVITSModel const &model);
 
-std::vector<NAssist::GSoVITSModel>
-tag_invoke(const boost::json::value_to_tag<std::vector<NAssist::GSoVITSModel>> &,
-  boost::json::value const &jv);
+std::vector<NAssist::GSoVITSModel> tag_invoke(
+    const boost::json::value_to_tag<std::vector<NAssist::GSoVITSModel>> &,
+    boost::json::value const &jv);
 void tag_invoke(const value_from_tag &, value &jv,
-  std::vector<NAssist::GSoVITSModel> const &models);
+                std::vector<NAssist::GSoVITSModel> const &models);
 
-}
+} // namespace boost::json
 
 namespace boost::json {
 NAssist::ProtoPacket
@@ -86,4 +86,12 @@ tag_invoke(const boost::json::value_to_tag<NAssist::GSoVITSRequestBody> &,
            boost::json::value const &jv);
 void tag_invoke(const value_from_tag &, value &jv,
                 NAssist::GSoVITSRequestBody const &request);
+} // namespace boost::json
+
+namespace boost::json {
+NAssist::InferData
+tag_invoke(const boost::json::value_to_tag<NAssist::InferData> &,
+           boost::json::value const &jv);
+void tag_invoke(const value_from_tag &, value &jv,
+                NAssist::InferData const &infer);
 } // namespace boost::json
