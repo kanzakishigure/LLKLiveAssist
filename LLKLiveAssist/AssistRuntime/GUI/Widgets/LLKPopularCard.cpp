@@ -6,13 +6,12 @@
 #include <QTimer>
 
 #include "ElaPushButton.h"
-#include "ElaSlider.h"
+
 #include "ElaTheme.h"
 #include "GUI/Widgets//private/LLKPopularCardPrivate.h"
 #include "LLKPopularCardFloater.h"
 #include <qcolor.h>
 #include <qglobal.h>
-
 
 namespace NAssist {
 Q_PROPERTY_CREATE_Q_CPP(LLKPopularCard, int, BorderRadius)
@@ -22,7 +21,6 @@ Q_PROPERTY_CREATE_Q_CPP(LLKPopularCard, QString, SubTitle)
 Q_PROPERTY_CREATE_Q_CPP(LLKPopularCard, QString, InteractiveTips)
 Q_PROPERTY_CREATE_Q_CPP(LLKPopularCard, QString, DetailedText)
 Q_PROPERTY_CREATE_Q_CPP(LLKPopularCard, QPixmap, CardFloatPixmap)
-Q_PROPERTY_CREATE_Q_CPP(LLKPopularCard, ElaSlider *, CardTemperatureSlider)
 
 LLKPopularCard::LLKPopularCard(QWidget *parent)
     : QWidget{parent}, d_ptr(new LLKPopularCardPrivate()) {
@@ -64,6 +62,17 @@ QString LLKPopularCard::getCardButtontext() const {
   Q_D(const LLKPopularCard);
   return d->_pCardButtontext;
 }
+int LLKPopularCard::getCardSliderValue() const {
+  Q_D(const LLKPopularCard);
+  return d->_floater->_volumeSlider->value();
+}
+void LLKPopularCard::setCardSliderValue(int value) {
+  Q_D(LLKPopularCard);
+  d->_floater->_volumeSlider->setValue(value);
+  update();
+  d->_floater->update();
+  Q_EMIT pCardSliderValueChanged();
+}
 void LLKPopularCard::setSelected(bool selected) {
   Q_D(LLKPopularCard);
   d->_pSelected = selected;
@@ -72,6 +81,7 @@ void LLKPopularCard::setSelected(bool selected) {
   d->_floater->update();
   Q_EMIT pSelectedChanged();
 }
+
 bool LLKPopularCard::getSelected() const {
   Q_D(const LLKPopularCard);
   return d->_pSelected;

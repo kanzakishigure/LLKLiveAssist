@@ -6,25 +6,27 @@
 #include <QPainterPath>
 #include <QPropertyAnimation>
 #include <QSlider.h>
-#include <cstddef>
+
 #include <qboxlayout.h>
 #include <qcolor.h>
 #include <qcoreevent.h>
 #include <qlayoutitem.h>
 #include <qnamespace.h>
 #include <qscrollarea.h>
+#include <qvariant.h>
 #include <qwidget.h>
 
 #include "ElaScrollArea.h"
-#include "ElaScrollBar.h"
+
+#include "ElaPushButton.h"
 #include "ElaScrollPage.h"
 #include "ElaSlider.h"
 #include "ElaText.h"
+#include "ElaTheme.h"
+#include "GUI/Theme/LLKStyle.h"
 #include "GUI/Widgets/private/LLKPopularCardPrivate.h"
 #include "LLKPopularCard.h"
 
-#include "ElaPushButton.h"
-#include "ElaTheme.h"
 namespace NAssist {
 LLKPopularCardFloater::LLKPopularCardFloater(LLKPopularCard *card,
                                              LLKPopularCardPrivate *cardPrivate,
@@ -62,6 +64,31 @@ LLKPopularCardFloater::LLKPopularCardFloater(LLKPopularCard *card,
   connect(_overButton, &ElaPushButton::clicked, _card,
           &LLKPopularCard::popularCardButtonClicked);
 
+  {
+    _testButton = new ElaPushButton("试听", this);
+
+    _testButton->setGraphicsEffect(_opacityEffect);
+    _testButton->move(0, 0);
+    _testButton->setLightDefaultColor(
+        ElaThemeColor(ElaThemeType::Light, PrimaryNormal));
+    _testButton->setLightHoverColor(
+        ElaThemeColor(ElaThemeType::Light, PrimaryHover));
+    _testButton->setLightPressColor(
+        ElaThemeColor(ElaThemeType::Light, PrimaryPress));
+    _testButton->setLightTextColor(Qt::white);
+    _testButton->setDarkDefaultColor(
+        ElaThemeColor(ElaThemeType::Dark, PrimaryNormal));
+    _testButton->setDarkHoverColor(
+        ElaThemeColor(ElaThemeType::Dark, PrimaryHover));
+    _testButton->setDarkPressColor(
+        ElaThemeColor(ElaThemeType::Dark, PrimaryPress));
+    _testButton->setDarkTextColor(Qt::white);
+    _testButton->setMinimumSize(0, 0);
+    _testButton->setMaximumSize(QSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX));
+    connect(_testButton, &ElaPushButton::clicked, _card,
+            &LLKPopularCard::popularCardTestButtonClicked);
+  }
+
   _themeMode = eTheme->getThemeMode();
   connect(eTheme, &ElaTheme::themeModeChanged, this,
           [=](ElaThemeType::ThemeMode themeMode) { _themeMode = themeMode; });
@@ -81,29 +108,36 @@ LLKPopularCardFloater::LLKPopularCardFloater(LLKPopularCard *card,
   QWidget *scroll_area_content = new QWidget(this);
   scroll_area_content->setStyleSheet("background-color:transparent;");
   floater_scroll_area->setWidget(scroll_area_content);
+  floater_scroll_area->setContentsMargins(0, 3, 0, 5);
   QVBoxLayout *floater_scroll_area_layout =
       new QVBoxLayout(scroll_area_content);
 
   floater_scroll_area_layout->setContentsMargins(0, 0, 0, 0);
 
   {
-    QWidget *temp_slider_area = new QWidget(this);
+    QWidget *volume_slider_area = new QWidget(this);
+    volume_slider_area->setFixedHeight(LLKStyle::FloaterAreaFixedHeight);
+    auto *volume_slider_area_layout = new QHBoxLayout(volume_slider_area);
 
-    auto *temp_slider_area_layout = new QHBoxLayout(temp_slider_area);
-
-    _cardPrivate->_pCardTemperatureSlider = new ElaSlider(this);
-    ElaText *text = new ElaText("模型情绪值", temp_slider_area);
+    _volumeSlider = new ElaSlider(this);
+    ElaText *text = new ElaText("Volume", volume_slider_area);
     text->setTextPixelSize(15);
     text->setFixedWidth(100);
-    temp_slider_area_layout->addWidget(text);
-    temp_slider_area_layout->setAlignment(Qt::AlignLeft);
-    temp_slider_area_layout->addSpacing(10);
-    temp_slider_area_layout->addWidget(_cardPrivate->_pCardTemperatureSlider);
-    _cardPrivate->_pCardTemperatureSlider->setFixedWidth(180);
+    volume_slider_area_layout->addWidget(text);
+    volume_slider_area_layout->setAlignment(Qt::AlignLeft);
+    volume_slider_area_layout->addSpacing(10);
+    volume_slider_area_layout->addWidget(_volumeSlider);
+    _volumeSlider->setFixedWidth(180);
+    _volumeSlider->setValue(100);
 
-    floater_scroll_area_layout->setSpacing(20);
-    floater_scroll_area_layout->addWidget(temp_slider_area);
+    floater_scroll_area_layout->addWidget(volume_slider_area);
+    connect(_volumeSlider, &ElaSlider::valueChanged, _card,
+      &LLKPopularCard::popularCardVolumeSliderValueChanged);
+
+    
+    
   }
+
   floater_layout->addWidget(floater_scroll_area);
 }
 
@@ -139,6 +173,17 @@ void LLKPopularCardFloater::showFloater() {
   buttonAnimation->setStartValue(_cardPrivate->_interactiveTipsBaseRect);
   buttonAnimation->setEndValue(_cardPrivate->_buttonTargetRect);
   buttonAnimation->start(QAbstractAnimation::DeleteWhenStopped);
+
+  QPropertyAnimation *test_button_animation =
+      new QPropertyAnimation(_testButton, "geometry");
+  test_button_animation->setEasingCurve(QEasingCurve::OutQuad);
+  test_button_animation->setDuration(300);
+  test_button_animation->setStartValue(_cardPrivate->_interactiveTipsBaseRect);
+  QRect end_rect = _cardPrivate->_buttonTargetRect;
+  end_rect = QRect(end_rect.left(),end_rect.top()+40,end_rect.width(),end_rect.height());
+  test_button_animation->setEndValue(end_rect);
+  test_button_animation->start(QAbstractAnimation::DeleteWhenStopped);
+
   setVisible(true);
 }
 
@@ -204,6 +249,26 @@ void LLKPopularCardFloater::hideFloater() {
   buttonOpacityAnimation->setStartValue(1);
   buttonOpacityAnimation->setEndValue(0);
   buttonOpacityAnimation->start(QAbstractAnimation::DeleteWhenStopped);
+
+  {
+    QPropertyAnimation *test_button_animation =
+        new QPropertyAnimation(_testButton, "geometry");
+    test_button_animation->setEasingCurve(QEasingCurve::InOutSine);
+    test_button_animation->setDuration(300);
+    test_button_animation->setStartValue(_testButton->geometry());
+    QRectF end_rect = _cardPrivate->_interactiveTipsBaseRect;
+    end_rect.adjust(0, 6, 0, 6);
+    test_button_animation->setEndValue(end_rect);
+    test_button_animation->start(QAbstractAnimation::DeleteWhenStopped);
+
+    QPropertyAnimation *testbutton_opacity_animation =
+        new QPropertyAnimation(_testButton->graphicsEffect(), "opacity");
+    testbutton_opacity_animation->setEasingCurve(QEasingCurve::InOutSine);
+    testbutton_opacity_animation->setDuration(350);
+    testbutton_opacity_animation->setStartValue(1);
+    testbutton_opacity_animation->setEndValue(0);
+    testbutton_opacity_animation->start(QAbstractAnimation::DeleteWhenStopped);
+  }
 }
 
 bool LLKPopularCardFloater::event(QEvent *event) {

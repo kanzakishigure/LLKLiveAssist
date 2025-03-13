@@ -19,16 +19,19 @@ class LLKPopularCard : public QWidget {
   Q_PROPERTY_CREATE_Q_H(QString, InteractiveTips)
   Q_PROPERTY_CREATE_Q_H(QString, DetailedText)
   Q_PROPERTY_CREATE_Q_H(QString, CardButtontext)
+  Q_PROPERTY_CREATE_Q_H(int, CardSliderValue)
+  
   Q_PROPERTY_CREATE_Q_H(QWidget *, CardFloatArea)
   Q_PROPERTY_CREATE_Q_H(QPixmap, CardFloatPixmap)
-  Q_PROPERTY_CREATE_Q_H(ElaSlider *, CardTemperatureSlider)
+  
 public:
   explicit LLKPopularCard(QWidget *parent = nullptr);
   ~LLKPopularCard();
 Q_SIGNALS:
   Q_SIGNAL void popularCardClicked();
   Q_SIGNAL void popularCardButtonClicked();
-
+  Q_SIGNAL void popularCardTestButtonClicked();
+  Q_SIGNAL void popularCardVolumeSliderValueChanged(int value);
 protected:
   virtual bool event(QEvent *event) override;
   virtual void paintEvent(QPaintEvent *event) override;

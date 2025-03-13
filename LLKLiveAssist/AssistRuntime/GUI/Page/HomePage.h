@@ -1,10 +1,11 @@
 #pragma once
 
-#include "AudioAssist.h"
 #include "BasePage.h"
 #include "Data/GSoVITSModel.h"
-#include "ElaFlowLayout.h"
-#include <cstddef>
+
+#include "GUI/Widgets//TTSConfigWidget.h"
+#include "GUI/Widgets/BiliConfigWidget.h"
+#include "GUI/Widgets/SovitsConfigWidget.h"
 #include <vector>
 
 class ElaMenu;
@@ -30,11 +31,11 @@ protected:
   virtual void mouseReleaseEvent(QMouseEvent *event);
 
 private:
-  ElaMenu *_homeMenu{nullptr};
+  ElaMenu *m_homeMenu{nullptr};
   ElaPivot *m_pivot{nullptr};
-  ElaComboBox *m_comboBox{nullptr};
-  ElaFlowLayout *model_card_flow_layout{nullptr};
 
-  AudioConfig m_audio_config_data;
+  SovitsConfigWidget *m_SovitsConfigWidget{nullptr};
+  BiliConfigWidget *m_BiliConfigWidget{nullptr};
+  TTSConfigWidget *m_TTSConfigWidget{nullptr};
 };
 } // namespace NAssist

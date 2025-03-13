@@ -3,9 +3,10 @@
 #include "Page/ModelPage.h"
 #include "Page/SettingPage.h"
 
+#include "Config/GUIConfig.h"
 #include <ElaWindow.h>
 #include <QMainWindow>
-
+#include <memory>
 
 class ElaContentDialog;
 
@@ -18,9 +19,13 @@ class AssistRuntimeWindow : public ElaWindow {
 
 public:
   explicit AssistRuntimeWindow(QWidget *parent = nullptr);
+  ~AssistRuntimeWindow() = default;
   void initWindow();
   void initEdgeLayout();
   void initContent();
+  void saveSetting();
+
+  std::shared_ptr<RuntimeConfig> getConfig() { return m_config; }
 
 private:
   // ela widget
@@ -31,5 +36,7 @@ private:
 
   QWidget *m_CentralWidget;
   QString m_settingKey;
+
+  std::shared_ptr<RuntimeConfig> m_config;
 };
 } // namespace NAssist

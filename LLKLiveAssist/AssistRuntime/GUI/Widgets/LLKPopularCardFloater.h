@@ -6,6 +6,7 @@
 #include "Def.h"
 #include "ElaScrollArea.h"
 #include "ElaSlider.h"
+
 class ElaPushButton;
 class QGraphicsOpacityEffect;
 namespace NAssist {
@@ -34,6 +35,8 @@ private:
   friend class LLKPopularCard;
   ElaThemeType::ThemeMode _themeMode;
   ElaPushButton *_overButton{nullptr};
+  ElaPushButton *_testButton{nullptr};
+  ElaSlider *_volumeSlider{nullptr};
   QGraphicsOpacityEffect *_opacityEffect{nullptr};
   bool _isHideAnimationFinished{true};
   LLKPopularCard *_card{nullptr};

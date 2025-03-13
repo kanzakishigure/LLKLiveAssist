@@ -30,7 +30,7 @@
 #include <qpixmap.h>
 #include <qwidget.h>
 #include <string>
-
+#include "GUI/Theme/LLKStyle.h"
 namespace NAssist {
 
 void ModelConfigContainer::checkPath(std::filesystem::path path) {
@@ -111,11 +111,14 @@ ModelConfigContainer::ModelConfigContainer(QWidget *parent) : QWidget(parent) {
             new QHBoxLayout(property_set_area);
         ElaText *property_text = new ElaText(property_name, this);
         property_text->setTextPixelSize(14);
+        
         property_text->setFixedWidth(80);
         ElaLineEdit *property_edit = new ElaLineEdit(this);
         property_edit->setFixedWidth(150);
+        property_edit->setBorderRadius(LLKStyle::LineEditBorderRadius);
         property_set_area_layout->addWidget(property_text);
         property_set_area_layout->addWidget(property_edit);
+        
         connect(property_edit, &ElaLineEdit::focusOut,
                 [bindfunc](QString text) { bindfunc(text); });
 
@@ -185,8 +188,12 @@ ModelConfigContainer::ModelConfigContainer(QWidget *parent) : QWidget(parent) {
     detail_area_title->setTextPixelSize(16);
 
     ElaToolButton *file_icon_button = new ElaToolButton(this);
+    
     file_icon_button->setElaIcon(ElaIconType::FileImport);
     file_icon_button->setText("从文件夹导入");
+    file_icon_button->setIsTransparent(false);
+
+
     file_icon_button->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     detail_area_laytout->addWidget(detail_area_title);
     detail_area_laytout->addSpacing(30);
@@ -207,13 +214,15 @@ ModelConfigContainer::ModelConfigContainer(QWidget *parent) : QWidget(parent) {
           ElaScrollPageArea *property_set_area = new ElaScrollPageArea(this);
           QHBoxLayout *property_set_area_layout =
               new QHBoxLayout(property_set_area);
-          property_set_area->setFixedHeight(40);
+          property_set_area->setFixedHeight(LLKStyle::ScrollPageAreaFixedHeight);
           ElaText *property_text = new ElaText(property_name, this);
           property_text->setTextPixelSize(14);
 
           ElaLineEdit *property_edit = new ElaLineEdit(this);
           property_edit->setFixedWidth(200);
-          property_edit->setFixedHeight(20);
+          property_edit->setFixedHeight(LLKStyle::LineEditFixedHeight);
+          property_edit->setBorderRadius(LLKStyle::LineEditBorderRadius);
+          
           property_set_area_layout->addWidget(property_text);
           property_set_area_layout->addWidget(property_edit);
           connect(property_edit, &ElaLineEdit::focusOut,
