@@ -30,9 +30,7 @@ int Main(int argc, char *argv[]) {
   std::filesystem::current_path(LLK_WORK_SPACE);
 #endif
   LLKLogger::instance()->init();
-  
 
-  
   QApplication app(argc, argv);
   eApp->init();
   // init the AssistCore
@@ -40,6 +38,7 @@ int Main(int argc, char *argv[]) {
   AssistRuntimeWindow w;
   w.show();
   auto exit_code = app.exec();
+  w.saveSetting();
   ModuleManager::getInstance().shutdown();
   LLKLogger::instance()->shutdown();
   return exit_code;
